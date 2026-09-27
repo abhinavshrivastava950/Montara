@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Deterministic 15-second reel score at 128 BPM. No samples, no network."""
 
+import json
 import math
+import os
 import random
+import re
 import struct
+import subprocess
 import wave
 
 SR = 48000
@@ -199,8 +203,9 @@ def main():
 
     peak = max(max(abs(v) for v in left), max(abs(v) for v in right), 1e-6)
     scale = 0.72 / peak
-    path = "assets/score.wav"
-    with wave.open(path, "w") as wf:
+    raw = "audio/score-raw.wav"
+    path = "audio/score.wav"
+    with wave.open(raw, "w") as wf:
         wf.setnchannels(2)
         wf.setsampwidth(2)
         wf.setframerate(SR)
@@ -210,7 +215,35 @@ def main():
             r = math.tanh(right[i] * scale * 1.15)
             frames += struct.pack("<hh", int(l * 32767), int(r * 32767))
         wf.writeframes(frames)
-    print(f"wrote {path} peak_in={peak:.3f}")
+    # Land near -14 LUFS with true peak at or under -1.5 dBTP.
+    measured = subprocess.run(
+        [
+            "ffmpeg", "-y", "-i", raw,
+            "-af", "loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json",
+            "-f", "null", "-",
+        ],
+        check=True, capture_output=True, text=True,
+    )
+    blob = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", measured.stderr, re.S)
+    stats = json.loads(blob.group(0))
+    subprocess.run(
+        [
+            "ffmpeg", "-y", "-i", raw,
+            "-af",
+            "loudnorm=I=-14:TP=-1.5:LRA=11:"
+            f"measured_I={stats['input_i']}:"
+            f"measured_TP={stats['input_tp']}:"
+            f"measured_LRA={stats['input_lra']}:"
+            f"measured_thresh={stats['input_thresh']}:"
+            f"offset={stats['target_offset']}:linear=true,"
+            "alimiter=limit=0.841:attack=5:release=40:level=disabled",
+            "-ar", "48000",
+            path,
+        ],
+        check=True, capture_output=True,
+    )
+    os.remove(raw)
+    print(f"wrote {path} peak_in={peak:.3f} measured_I={stats['input_i']}")
 
 
 if __name__ == "__main__":
