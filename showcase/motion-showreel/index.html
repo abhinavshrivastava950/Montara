@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fifteen — Motion Showreel</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #16130F;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #16130F;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      #scene1 { z-index: 1; background: #16130F; }
+      #scene2 { z-index: 2; background: #F4EFE4; opacity: 0; }
+      #scene3 { z-index: 3; background: #C4322C; opacity: 0; }
+      #scene4 { z-index: 4; background: #16130F; opacity: 0; }
+
+      .display {
+        font-family: "Bebas Neue", Impact, sans-serif;
+        font-weight: 400;
+        line-height: 0.84;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+      .display span { display: inline-block; }
+      .kicker {
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-weight: 500;
+        font-size: 26px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      /* Scene 1 — poster open */
+      #s1-bar, #s4-spine {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 20px;
+        height: 100%;
+        background: #FFC107;
+        transform-origin: 50% 0%;
+        z-index: 4;
+      }
+      #s1-marks { position: absolute; inset: 0; z-index: 4; }
+      .mark {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        border: 0 solid #FFF8E8;
+      }
+      .mark.tl { top: 32px; left: 44px; border-top-width: 3px; border-left-width: 3px; }
+      .mark.tr { top: 32px; right: 36px; border-top-width: 3px; border-right-width: 3px; }
+      .mark.bl { bottom: 96px; left: 44px; border-bottom-width: 3px; border-left-width: 3px; }
+      .mark.br { bottom: 96px; right: 36px; border-bottom-width: 3px; border-right-width: 3px; }
+      #s1-ring, #s4-circle {
+        position: absolute;
+        border-radius: 50%;
+        z-index: 1;
+      }
+      #s1-ring {
+        width: 560px;
+        height: 560px;
+        right: -40px;
+        top: 70px;
+        border: 3px solid #FFF8E8;
+        opacity: 0.45;
+      }
+      #s1-circle {
+        position: absolute;
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+        background: #FFC107;
+        right: 88px;
+        top: 168px;
+        z-index: 1;
+      }
+      .stage {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .s1 {
+        padding: 52px 88px 108px 96px;
+        justify-content: space-between;
+      }
+      #s1-kicker { color: #FFF8E8; }
+      #motion {
+        font-size: 500px;
+        color: #FFF8E8;
+        letter-spacing: -0.03em;
+      }
+      .s1-bottom {
+        display: flex;
+        align-items: flex-end;
+        width: 100%;
+      }
+      #design-word {
+        font-size: 230px;
+        color: #E23A32;
+        letter-spacing: -0.03em;
+        transform-origin: 0% 100%;
+      }
+      #reel-word { font-size: 230px; color: #FFC107; letter-spacing: -0.03em; text-align: right; }
+      #s1-caption, #s1-year {
+        margin-top: 8px;
+        font-size: 24px;
+        letter-spacing: 0.12em;
+        color: #FFF8E8;
+        text-transform: uppercase;
+      }
+      #s1-year { text-align: right; }
+      #s1-rule {
+        flex: 1;
+        height: 8px;
+        margin: 0 28px 22px;
+        background: #FFC107;
+        transform-origin: 0% 50%;
+      }
+      .s1-right { text-align: right; }
+
+      /* Scene 2 — four studies */
+      .s2 {
+        padding: 40px 72px 104px 80px;
+        gap: 16px;
+      }
+      #s2-kicker { color: #16130F; }
+      .grid {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 1.28fr 0.92fr;
+        grid-template-rows: 1.18fr 0.86fr;
+        gap: 22px 28px;
+      }
+      .cell {
+        position: relative;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .cell-label {
+        font-size: 22px;
+        letter-spacing: 0.16em;
+        color: #16130F;
+        text-transform: uppercase;
+      }
+      #ease-cell { justify-content: flex-end; }
+      #ease-disc {
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: #FFC107;
+        right: -20px;
+        top: -36px;
+      }
+      #ease-word {
+        position: relative;
+        z-index: 2;
+        font-size: 220px;
+        color: #16130F;
+        letter-spacing: -0.03em;
+      }
+      #ease-svg { width: 100%; height: 120px; display: block; margin-top: 8px; }
+      #ease-note {
+        font-size: 22px;
+        letter-spacing: 0.06em;
+        color: #16130F;
+      }
+      #orb {
+        position: absolute;
+        left: 18px;
+        bottom: 78px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #E23A32;
+        z-index: 3;
+      }
+      .mass-well {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+      #floor {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 10px;
+        background: #16130F;
+      }
+      #mass {
+        position: absolute;
+        inset: 0;
+        background: #16130F;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform-origin: 50% 100%;
+      }
+      #weight-word { font-size: 168px; color: #FFF8E8; letter-spacing: -0.02em; }
+      #rhythm-word {
+        font-size: 96px;
+        color: #16130F;
+        margin-top: 8px;
+      }
+      #bars {
+        margin-top: auto;
+        height: 168px;
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+      }
+      .bar {
+        flex: 1;
+        background: #FFC107;
+        transform-origin: 50% 100%;
+      }
+      .bar:nth-child(3n) { background: #E23A32; }
+      #space-word {
+        margin-top: auto;
+        margin-bottom: auto;
+        font-size: 168px;
+        color: #16130F;
+        letter-spacing: 0.2em;
+      }
+
+      /* Scene 3 — principles, performed */
+      #band {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 318px;
+        background: #16130F;
+        transform-origin: 50% 0%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 80px;
+        z-index: 2;
+      }
+      #s3-index { color: #FFF8E8; margin-bottom: 8px; }
+      #anticipation {
+        font-size: 196px;
+        color: #FFC107;
+        letter-spacing: -0.02em;
+      }
+      #band-mark {
+        position: absolute;
+        right: 72px;
+        top: 78px;
+        width: 148px;
+        height: 148px;
+        background: #FFC107;
+      }
+      #stagger {
+        position: absolute;
+        left: 72px;
+        top: 360px;
+        font-size: 300px;
+        color: #FFF8E8;
+        letter-spacing: -0.03em;
+        z-index: 2;
+      }
+      #s3-ring {
+        position: absolute;
+        width: 680px;
+        height: 680px;
+        left: -300px;
+        top: 420px;
+        border-radius: 50%;
+        border: 4px solid #FFF8E8;
+        opacity: 0.4;
+        z-index: 1;
+      }
+      #over-panel {
+        position: absolute;
+        right: 0;
+        top: 548px;
+        width: 860px;
+        height: 460px;
+        background: #FFC107;
+        display: flex;
+        align-items: center;
+        padding: 0 56px;
+        z-index: 2;
+      }
+      #overshoot-word {
+        font-size: 188px;
+        color: #16130F;
+        letter-spacing: -0.03em;
+        transform-origin: 0% 50%;
+      }
+      #hold-block {
+        position: absolute;
+        left: 72px;
+        top: 820px;
+        z-index: 2;
+      }
+      #hold-word { font-size: 140px; color: #FFF8E8; }
+      #hold-rule {
+        height: 8px;
+        width: 280px;
+        margin-top: 10px;
+        background: #FFF8E8;
+        transform-origin: 0% 50%;
+      }
+
+      /* Scene 4 — lockup */
+      .s4 {
+        padding: 120px 80px 140px 96px;
+        justify-content: center;
+      }
+      #s4-sq {
+        position: absolute;
+        left: 20px;
+        top: 456px;
+        width: 84px;
+        height: 84px;
+        background: #E23A32;
+        z-index: 5;
+      }
+      .lockup { position: relative; z-index: 2; max-width: 1180px; }
+      #fifteen {
+        font-size: 400px;
+        color: #FFC107;
+        letter-spacing: -0.035em;
+      }
+      #s4-sub {
+        margin-top: 8px;
+        font-size: 84px;
+        color: #FFF8E8;
+        letter-spacing: 0.01em;
+      }
+      #s4-rule {
+        width: 520px;
+        height: 8px;
+        margin: 22px 0;
+        background: #E23A32;
+        transform-origin: 0% 50%;
+      }
+      #s4-meta {
+        font-size: 28px;
+        letter-spacing: 0.16em;
+        color: #FFF8E8;
+        text-transform: uppercase;
+      }
+      #s4-circle {
+        width: 860px;
+        height: 860px;
+        right: -240px;
+        top: 80px;
+        background: #FFC107;
+      }
+
+      /* Dip + wipes sit above the dock so the hit is full-frame */
+      #dip {
+        position: absolute;
+        inset: 0;
+        background: #FFC107;
+        opacity: 0;
+        z-index: 36;
+      }
+      .wipe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        transform: translateX(-1920px);
+      }
+      #wipe-a { background: #FFC107; z-index: 41; }
+      #wipe-b { background: #E23A32; z-index: 42; }
+      #wipe-c { background: #FFF8E8; z-index: 43; }
+      #wipe-d { background: #16130F; z-index: 44; }
+      #wipe-e { background: #FFC107; z-index: 45; }
+
+      #dock {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 72px;
+        z-index: 30;
+        background: #16130F;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        padding: 0 28px 0 36px;
+      }
+      #dock-label {
+        width: 132px;
+        font-size: 24px;
+        letter-spacing: 0.14em;
+        color: #FFF8E8;
+      }
+      #track-wrap {
+        position: relative;
+        flex: 1;
+        height: 28px;
+      }
+      #track {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 12px;
+        height: 4px;
+        background: #3A342C;
+      }
+      #fill {
+        height: 100%;
+        width: 100%;
+        background: #FFC107;
+        transform-origin: 0% 50%;
+        transform: scaleX(0);
+      }
+      #playhead {
+        position: absolute;
+        left: 0;
+        top: 2px;
+        width: 4px;
+        height: 24px;
+        background: #FFC107;
+      }
+      #tc {
+        width: 168px;
+        text-align: right;
+        font-size: 26px;
+        letter-spacing: 0.06em;
+        color: #FFF8E8;
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="showreel"
+      data-start="0"
+      data-duration="15"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="scene1" class="scene">
+        <div id="s1-bar"></div>
+        <div id="s1-marks">
+          <i class="mark tl"></i>
+          <i class="mark tr"></i>
+          <i class="mark bl"></i>
+          <i class="mark br"></i>
+        </div>
+        <div id="s1-ring"></div>
+        <div id="s1-circle"></div>
+        <div class="stage s1">
+          <div id="s1-kicker" class="kicker">01 &nbsp;/&nbsp; Open</div>
+          <div id="motion" class="display">
+            <span>M</span><span>O</span><span>T</span><span>I</span><span>O</span><span>N</span>
+          </div>
+          <div class="s1-bottom">
+            <div>
+              <div id="design-word" class="display">DESIGN</div>
+              <div id="s1-caption">Kinetic type on a timeline</div>
+            </div>
+            <div id="s1-rule"></div>
+            <div class="s1-right">
+              <div id="reel-word" class="display">REEL</div>
+              <div id="s1-year">2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene2" class="scene">
+        <div class="stage s2">
+          <div id="s2-kicker" class="kicker">02 &nbsp;/&nbsp; Four studies</div>
+          <div class="grid">
+            <div class="cell" id="ease-cell">
+              <div id="ease-disc"></div>
+              <div id="ease-label" class="cell-label">Sine ease</div>
+              <div id="ease-word" class="display">
+                <span>E</span><span>A</span><span>S</span><span>E</span>
+              </div>
+              <svg id="ease-svg" viewBox="0 0 400 130" fill="none">
+                <path
+                  id="ease-path"
+                  d="M12 118 C 36 118, 48 16, 388 18"
+                  stroke="#E23A32"
+                  stroke-width="8"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <div id="ease-note">0.22,&nbsp;1,&nbsp;0.36,&nbsp;1</div>
+              <div id="orb"></div>
+            </div>
+
+            <div class="cell" id="weight-cell">
+              <div id="weight-kicker" class="cell-label">Gravity</div>
+              <div class="mass-well">
+                <div id="floor"></div>
+                <div id="mass">
+                  <div id="weight-word" class="display">WEIGHT</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cell" id="rhythm-cell">
+              <div id="rhythm-kicker" class="cell-label">Meter</div>
+              <div id="rhythm-word" class="display">RHYTHM</div>
+              <div id="bars">
+                <div class="bar" style="height: 22%"></div>
+                <div class="bar" style="height: 38%"></div>
+                <div class="bar" style="height: 28%"></div>
+                <div class="bar" style="height: 62%"></div>
+                <div class="bar" style="height: 34%"></div>
+                <div class="bar" style="height: 78%"></div>
+                <div class="bar" style="height: 46%"></div>
+                <div class="bar" style="height: 96%"></div>
+                <div class="bar" style="height: 30%"></div>
+                <div class="bar" style="height: 70%"></div>
+                <div class="bar" style="height: 48%"></div>
+                <div class="bar" style="height: 100%"></div>
+              </div>
+            </div>
+
+            <div class="cell" id="space-cell">
+              <div id="space-kicker" class="cell-label">Tracking</div>
+              <div id="space-word" class="display">
+                <span>S</span><span>P</span><span>A</span><span>C</span><span>E</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="scene3" class="scene">
+        <div id="s3-ring"></div>
+        <div id="band">
+          <div id="s3-index" class="kicker">03 &nbsp;/&nbsp; Principles</div>
+          <div id="anticipation" class="display">ANTICIPATION</div>
+          <div id="band-mark"></div>
+        </div>
+        <div id="stagger" class="display">
+          <span>S</span><span>T</span><span>A</span><span>G</span><span>G</span><span>E</span><span>R</span>
+        </div>
+        <div id="over-panel">
+          <div id="overshoot-word" class="display">OVERSHOOT</div>
+        </div>
+        <div id="hold-block">
+          <div id="hold-word" class="display">HOLD</div>
+          <div id="hold-rule"></div>
+        </div>
+      </div>
+
+      <div id="scene4" class="scene">
+        <div id="s4-spine"></div>
+        <div id="s4-sq"></div>
+        <div id="s4-circle"></div>
+        <div class="stage s4">
+          <div class="lockup">
+            <div id="fifteen" class="display">
+              <span>F</span><span>I</span><span>F</span><span>T</span><span>E</span><span>E</span><span>N</span>
+            </div>
+            <div id="s4-sub" class="display">MOTION DESIGN</div>
+            <div id="s4-rule"></div>
+            <div id="s4-meta">Showreel &nbsp;·&nbsp; 00:15 &nbsp;·&nbsp; 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dip"></div>
+      <div id="wipe-a" class="wipe"></div>
+      <div id="wipe-b" class="wipe"></div>
+      <div id="wipe-c" class="wipe"></div>
+      <div id="wipe-d" class="wipe"></div>
+      <div id="wipe-e" class="wipe"></div>
+
+      <footer id="dock">
+        <div id="dock-label">30 FPS</div>
+        <div id="track-wrap">
+          <div id="track"><div id="fill"></div></div>
+          <div id="playhead"></div>
+        </div>
+        <div id="tc">00:00:00</div>
+      </footer>
+
+      <audio
+        id="score"
+        data-start="0"
+        data-duration="15"
+        data-track-index="1"
+        data-volume="1"
+        src="assets/score.wav"
+      ></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      tl.addLabel("open", 0);
+      tl.addLabel("zoom", 3.42);
+      tl.addLabel("studies", 3.75);
+      tl.addLabel("wipe", 7.16);
+      tl.addLabel("principles", 7.5);
+      tl.addLabel("dip", 11.08);
+      tl.addLabel("lockup", 11.25);
+      tl.addLabel("out", 14.42);
+
+      var clock = { frame: 0 };
+      tl.to(clock, {
+        frame: 450,
+        duration: 15,
+        ease: "none",
+        onUpdate: function () {
+          var frame = Math.max(0, Math.min(449, Math.round(clock.frame)));
+          var ss = Math.floor(frame / 30);
+          var ff = frame % 30;
+          var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+          document.getElementById("tc").textContent = "00:" + pad(ss) + ":" + pad(ff);
+        }
+      }, 0);
+
+      var travel = document.getElementById("track-wrap").getBoundingClientRect().width - 4;
+      if (!(travel > 200)) travel = 1480;
+      tl.fromTo("#fill", { scaleX: 0 }, { scaleX: 1, duration: 15, ease: "none" }, 0);
+      tl.fromTo("#playhead", { x: 0 }, { x: travel, duration: 15, ease: "none" }, 0);
+
+      /* Scene 1 — poster. Each hit is a different verb. */
+      tl.from("#s1-bar", { scaleY: 0, duration: 0.46, ease: "expo.out" }, "open+=0.12");
+      tl.from("#s1-marks", { opacity: 0, duration: 0.35, ease: "power2.out" }, "open+=0.18");
+      tl.from("#s1-kicker", { x: -32, opacity: 0, duration: 0.4, ease: "power3.out" }, "open+=0.22");
+      tl.from("#motion span", {
+        y: 180, opacity: 0, duration: 0.48, ease: "expo.out", stagger: 0.042
+      }, "open+=0.2");
+      tl.from("#design-word", {
+        x: -90, rotation: -3, opacity: 0, duration: 0.46, ease: "back.out(1.7)"
+      }, "open+=0.9");
+      tl.from("#reel-word", {
+        y: 80, opacity: 0, duration: 0.4, ease: "power4.out"
+      }, "open+=1.38");
+      tl.from("#s1-circle", {
+        scale: 0, rotation: -18, opacity: 0, duration: 0.52, ease: "back.out(1.9)"
+      }, "open+=1.38");
+      tl.from("#s1-rule", { scaleX: 0, duration: 0.5, ease: "power3.inOut" }, "open+=1.62");
+      tl.from("#s1-caption", { y: 16, opacity: 0, duration: 0.36, ease: "power2.out" }, "open+=1.78");
+      tl.from("#s1-year", { opacity: 0, duration: 0.3, ease: "power1.out" }, "open+=1.9");
+      tl.fromTo("#s1-ring", { rotation: 0 }, {
+        rotation: 22, duration: 2.0, ease: "sine.inOut"
+      }, "open+=1.2");
+      tl.fromTo("#s1-circle", { scale: 1 }, {
+        scale: 1.055, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, "open+=2.05");
+
+      /* Zoom through into the studies. Origin sits on the type. */
+      tl.to("#scene1", {
+        scale: 2.12,
+        opacity: 0,
+        filter: "blur(6px)",
+        duration: 0.32,
+        ease: "power3.in",
+        transformOrigin: "28% 46%"
+      }, "zoom");
+      tl.fromTo("#scene2",
+        { scale: 0.6, opacity: 0, filter: "blur(6px)" },
+        { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.36, ease: "power3.out" },
+        "zoom+=0.14"
+      );
+
+      /* Scene 2 — four studies, each with its own physics. */
+      tl.from("#s2-kicker", { y: -18, opacity: 0, duration: 0.32, ease: "power4.out" }, "studies+=0.02");
+      tl.from("#ease-disc", { scale: 0, opacity: 0, duration: 0.45, ease: "back.out(1.6)" }, "studies+=0.06");
+      tl.from("#ease-label", { opacity: 0, y: 10, duration: 0.28, ease: "power1.out" }, "studies+=0.12");
+      tl.from("#ease-word span", {
+        x: -40, opacity: 0, duration: 0.62, ease: "sine.out", stagger: 0.07
+      }, "studies+=0.16");
+      var easePath = document.getElementById("ease-path");
+      var easeLen = easePath.getTotalLength();
+      easePath.style.strokeDasharray = String(easeLen);
+      tl.fromTo(easePath,
+        { strokeDashoffset: easeLen },
+        { strokeDashoffset: 0, duration: 1.05, ease: "power2.inOut" },
+        "studies+=0.28"
+      );
+      tl.from("#ease-note", { opacity: 0, duration: 0.3, ease: "power1.inOut" }, "studies+=1.05");
+      tl.from("#orb", { scale: 0, opacity: 0, duration: 0.28, ease: "elastic.out(1, 0.55)" }, "studies+=0.34");
+      tl.fromTo("#orb", { x: 0 }, {
+        x: 340, duration: 0.78, ease: "sine.inOut", yoyo: true, repeat: 3
+      }, "studies+=0.5");
+
+      tl.from("#weight-kicker", { opacity: 0, x: 16, duration: 0.28, ease: "power3.out" }, "studies+=0.72");
+      tl.to("#weight-cell", { scale: 0.97, duration: 0.08, ease: "power1.in", transformOrigin: "50% 80%" }, "studies+=0.86");
+      tl.to("#weight-cell", { scale: 1, duration: 0.1, ease: "expo.inOut" }, "studies+=0.94");
+      tl.fromTo("#mass",
+        { y: -540, scaleY: 1.06 },
+        { y: -575, scaleY: 1.06, duration: 0.07, ease: "power1.out" },
+        "studies+=0.94"
+      );
+      tl.to("#mass", { y: 0, scaleY: 1.06, duration: 0.24, ease: "power4.in" }, "studies+=1.01");
+      tl.to("#mass", { scaleY: 0.88, duration: 0.06, ease: "circ.out" }, "studies+=1.25");
+      tl.to("#mass", { scaleY: 1.05, duration: 0.08, ease: "power3.out" }, "studies+=1.31");
+      tl.to("#mass", { scaleY: 1, duration: 0.12, ease: "sine.inOut" }, "studies+=1.39");
+
+      tl.from("#rhythm-kicker", { y: 12, opacity: 0, duration: 0.26, ease: "power2.out" }, "studies+=1.72");
+      tl.from("#rhythm-word", { x: -30, opacity: 0, duration: 0.34, ease: "expo.out" }, "studies+=1.8");
+      tl.from(".bar", {
+        scaleY: 0, duration: 0.26, ease: "back.out(1.8)", stagger: 0.035
+      }, "studies+=1.9");
+      tl.to(".bar", { scaleY: 1.12, duration: 0.07, ease: "power4.out", stagger: 0.012 }, "studies+=2.58");
+      tl.to(".bar", { scaleY: 1, duration: 0.1, ease: "circ.inOut", stagger: 0.012 }, "studies+=2.65");
+
+      tl.from("#space-kicker", { opacity: 0, duration: 0.24, ease: "power1.out" }, "studies+=2.15");
+      tl.from("#space-word span", {
+        y: 32, opacity: 0, duration: 0.32, ease: "expo.out", stagger: 0.05
+      }, "studies+=2.28");
+      tl.from("#space-word", {
+        letterSpacing: "-0.06em", duration: 0.72, ease: "power3.inOut"
+      }, "studies+=2.32");
+
+      /* Staggered blocks. Scene swaps while covered. */
+      var wipes = ["#wipe-a", "#wipe-b", "#wipe-c", "#wipe-d", "#wipe-e"];
+      for (var i = 0; i < wipes.length; i++) {
+        tl.set(wipes[i], { x: -1920, immediateRender: false }, "wipe-=0.02");
+        tl.to(wipes[i], { x: 0, duration: 0.2, ease: "power4.inOut" }, "wipe+=" + (i * 0.035));
+      }
+      tl.set("#scene2", { opacity: 0, immediateRender: false }, "wipe+=0.32");
+      tl.set("#scene3", { opacity: 1, immediateRender: false }, "wipe+=0.32");
+      for (var j = 0; j < wipes.length; j++) {
+        tl.to(wipes[j], { x: 1920, duration: 0.2, ease: "power4.inOut" }, "wipe+=" + (0.38 + j * 0.035));
+      }
+
+      /* Scene 3 — the word performs the principle. */
+      tl.from("#band", { scaleY: 0, duration: 0.3, ease: "expo.inOut" }, "principles+=0.12");
+      tl.from("#s3-index", { x: -18, opacity: 0, duration: 0.28, ease: "power2.out" }, "principles+=0.28");
+      tl.from("#band-mark", { scale: 0, rotation: -8, opacity: 0, duration: 0.36, ease: "back.out(1.7)" }, "principles+=0.34");
+      tl.from("#anticipation", { opacity: 0, duration: 0.16, ease: "power2.out" }, "principles+=0.46");
+      tl.fromTo("#anticipation", { y: 0 }, { y: 26, duration: 0.09, ease: "power1.in" }, "principles+=0.46");
+      tl.to("#anticipation", { y: 0, duration: 0.38, ease: "power4.out" }, "principles+=0.55");
+      tl.from("#stagger span", {
+        x: -56, opacity: 0, duration: 0.34, ease: "expo.out", stagger: 0.07
+      }, "principles+=0.94");
+      tl.from("#over-panel", { x: 240, opacity: 0, duration: 0.36, ease: "power4.out" }, "principles+=1.48");
+      tl.from("#overshoot-word", {
+        scale: 1.26, opacity: 0, duration: 0.48, ease: "back.out(2.1)"
+      }, "principles+=1.88");
+      tl.from("#hold-word", { opacity: 0, y: 12, duration: 0.7, ease: "power1.out" }, "principles+=2.1");
+      tl.from("#hold-rule", { scaleX: 0, duration: 0.4, ease: "power3.inOut" }, "principles+=2.45");
+      tl.fromTo("#s3-ring", { rotation: 0 }, {
+        rotation: 18, duration: 1.4, ease: "sine.inOut"
+      }, "principles+=2.05");
+
+      /* Yellow dip, then the lockup. */
+      tl.to("#scene3", { opacity: 0, duration: 0.16, ease: "power2.in" }, "dip");
+      tl.to("#dip", { opacity: 1, duration: 0.12, ease: "power2.in" }, "dip");
+      tl.fromTo("#scene4",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.26, ease: "power2.out", immediateRender: false },
+        "dip+=0.22"
+      );
+      tl.to("#dip", { opacity: 0, duration: 0.22, ease: "power2.out" }, "dip+=0.22");
+
+      tl.from("#s4-spine", { scaleY: 0, duration: 0.4, ease: "expo.out" }, "lockup+=0.12");
+      tl.from("#s4-sq", { scale: 0, rotation: -10, opacity: 0, duration: 0.38, ease: "back.out(1.8)" }, "lockup+=0.22");
+      tl.from("#s4-circle", { scale: 0.72, opacity: 0, duration: 0.62, ease: "power4.out" }, "lockup+=0.1");
+      tl.from("#fifteen span", {
+        y: 90, opacity: 0, duration: 0.4, ease: "expo.out", stagger: 0.038
+      }, "lockup+=0.2");
+      tl.from("#s4-sub", { y: 24, opacity: 0, duration: 0.36, ease: "power3.out" }, "lockup+=0.62");
+      tl.from("#s4-rule", { scaleX: 0, duration: 0.42, ease: "power3.inOut" }, "lockup+=0.78");
+      tl.from("#s4-meta", { opacity: 0, duration: 0.36, ease: "power1.out" }, "lockup+=0.96");
+      tl.fromTo("#s4-circle", { scale: 1 }, {
+        scale: 1.04, duration: 1.05, ease: "sine.inOut", yoyo: true, repeat: 1
+      }, "lockup+=1.05");
+
+      tl.to("#scene4", { opacity: 0, duration: 0.5, ease: "power2.in" }, "out");
+      tl.to("#dock", { opacity: 0, duration: 0.46, ease: "power1.in" }, "out+=0.04");
+
+      window.__timelines["showreel"] = tl;
+    </script>
+  </body>
+</html>
