@@ -2,461 +2,348 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Fifteen — Motion Showreel</title>
+    <title>Afterlight — Motion Showreel</title>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
+      @font-face {
+        font-family: "Instrument Serif";
+        src: url("fonts/InstrumentSerif-Italic.ttf") format("truetype");
+        font-weight: 400;
+        font-style: italic;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Instrument Serif";
+        src: url("fonts/InstrumentSerif-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Instrument Sans";
+        src: url("fonts/InstrumentSans-Regular.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+
       * { box-sizing: border-box; }
       html, body {
         margin: 0;
         width: 1920px;
         height: 1080px;
         overflow: hidden;
-        background: #16130F;
-        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        background: #0C0B09;
       }
       #root {
         position: relative;
         width: 1920px;
         height: 1080px;
         overflow: hidden;
-        background: #16130F;
+        background: #0C0B09;
       }
       .scene {
         position: absolute;
         inset: 0;
         overflow: hidden;
       }
-      #scene1 { z-index: 1; background: #16130F; }
-      #scene2 { z-index: 2; background: #F4EFE4; opacity: 0; }
-      #scene3 { z-index: 3; background: #C4322C; opacity: 0; }
-      #scene4 { z-index: 4; background: #16130F; opacity: 0; }
+      #scene2, #scene3, #scene4, #scene5, #scene6 { opacity: 0; }
 
-      .display {
-        font-family: "Bebas Neue", sans-serif;
+      .serif {
+        font-family: "Instrument Serif", serif;
+        font-style: italic;
         font-weight: 400;
-        line-height: 0.84;
-        letter-spacing: -0.02em;
-        margin: 0;
-      }
-      .display span { display: inline-block; }
-      .kicker {
-        font-family: "IBM Plex Mono", ui-monospace, monospace;
-        font-weight: 500;
-        font-size: 26px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
+        line-height: 0.86;
+        color: #F4EFE6;
       }
 
-      /* Scene 1 — poster open */
-      #s1-bar, #s4-spine {
+      #glow {
+        position: absolute;
+        width: 880px;
+        height: 880px;
+        right: -460px;
+        top: -420px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(232, 201, 154, 0.42) 0%, rgba(232, 201, 154, 0) 70%);
+        z-index: 0;
+      }
+      #shaft {
+        position: absolute;
+        width: 72px;
+        height: 1500px;
+        left: 990px;
+        top: -220px;
+        opacity: 0.55;
+        background: linear-gradient(to bottom, rgba(243, 230, 200, 0), rgba(243, 230, 200, 0.42), rgba(243, 230, 200, 0));
+        filter: blur(8px);
+        z-index: 0;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(ellipse at center, rgba(12, 11, 9, 0) 52%, rgba(12, 11, 9, 0.5) 100%);
+      }
+      #rail-top, #rail-bot {
+        position: absolute;
+        left: 72px;
+        width: 1776px;
+        height: 2px;
+        background: #E8C99A;
+        z-index: 11;
+        transform-origin: 50% 50%;
+      }
+      #rail-top { top: 48px; }
+      #rail-bot { bottom: 48px; }
+
+      #glass-rig {
+        position: absolute;
+        right: 128px;
+        top: 150px;
+        width: 460px;
+        height: 660px;
+        perspective: 1200px;
+        z-index: 3;
+      }
+      #glass {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(160deg, rgba(244, 239, 230, 0.32), rgba(244, 239, 230, 0.05) 46%, rgba(12, 11, 9, 0.15));
+        border: 1px solid rgba(243, 230, 200, 0.7);
+        box-shadow: inset 0 1px 0 rgba(244, 239, 230, 0.45);
+        transform: rotateY(-22deg) rotateX(8deg);
+        transform-style: preserve-3d;
+        overflow: hidden;
+      }
+      #glass-inset {
+        position: absolute;
+        inset: 22px;
+        border: 1px solid rgba(243, 230, 200, 0.32);
+      }
+      #shine {
+        position: absolute;
+        width: 38%;
+        height: 170%;
+        left: -40%;
+        top: -30%;
+        background: linear-gradient(90deg, rgba(244, 239, 230, 0), rgba(244, 239, 230, 0.55), rgba(244, 239, 230, 0));
+      }
+      #s1-rule {
+        position: absolute;
+        left: 112px;
+        top: 168px;
+        width: 168px;
+        height: 2px;
+        background: #E8C99A;
+        transform-origin: 0% 50%;
+      }
+      #after {
+        position: absolute;
+        left: 104px;
+        top: 210px;
+        font-size: 280px;
+      }
+      #light {
+        position: absolute;
+        left: 104px;
+        top: 500px;
+        font-size: 280px;
+        color: #E8C99A;
+      }
+
+      #lens {
+        position: absolute;
+        left: 128px;
+        top: 160px;
+        width: 500px;
+        height: 500px;
+      }
+      #lens-word {
+        position: absolute;
+        left: 128px;
+        top: 690px;
+        width: 500px;
+        text-align: center;
+        font-size: 148px;
+      }
+      #edge {
+        position: absolute;
+        right: 140px;
+        top: 280px;
+        display: flex;
+        font-size: 380px;
+      }
+      #edge span { display: block; }
+      #edge-tick {
+        position: absolute;
+        right: 140px;
+        top: 230px;
+        width: 720px;
+        height: 8px;
+        background: #E24B32;
+        transform-origin: 100% 50%;
+      }
+
+      #plane-wrap {
         position: absolute;
         left: 0;
         top: 0;
-        width: 20px;
-        height: 100%;
-        background: #FFC107;
-        transform-origin: 50% 0%;
-        z-index: 4;
+        width: 1920px;
+        height: 1080px;
+        z-index: 6;
+        opacity: 0;
       }
-      #s1-marks { position: absolute; inset: 0; z-index: 4; }
-      .mark {
-        position: absolute;
-        width: 26px;
-        height: 26px;
-        border: 0 solid #FFF8E8;
-      }
-      .mark.tl { top: 32px; left: 44px; border-top-width: 3px; border-left-width: 3px; }
-      .mark.tr { top: 32px; right: 36px; border-top-width: 3px; border-right-width: 3px; }
-      .mark.bl { bottom: 96px; left: 44px; border-bottom-width: 3px; border-left-width: 3px; }
-      .mark.br { bottom: 96px; right: 36px; border-bottom-width: 3px; border-right-width: 3px; }
-      #s1-ring, #s4-circle {
-        position: absolute;
-        border-radius: 50%;
-        z-index: 1;
-      }
-      #s1-ring {
-        width: 560px;
-        height: 560px;
-        right: -40px;
-        top: 70px;
-        border: 3px solid #FFF8E8;
-        opacity: 0.45;
-      }
-      #s1-circle {
-        position: absolute;
-        width: 340px;
-        height: 340px;
-        border-radius: 50%;
-        background: #FFC107;
-        right: 88px;
-        top: 168px;
-        z-index: 1;
-      }
-      .stage {
-        position: relative;
-        z-index: 2;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-      .s1 {
-        padding: 52px 88px 108px 96px;
-        justify-content: space-between;
-      }
-      #s1-kicker { color: #FFF8E8; }
-      #motion {
-        font-size: 500px;
-        color: #FFF8E8;
-        letter-spacing: -0.03em;
-      }
-      .s1-bottom {
-        display: flex;
-        align-items: flex-end;
-        width: 100%;
-      }
-      #design-word {
-        font-size: 230px;
-        color: #E23A32;
-        letter-spacing: -0.03em;
-        transform-origin: 0% 100%;
-      }
-      #reel-word { font-size: 230px; color: #FFC107; letter-spacing: -0.03em; text-align: right; }
-      #s1-caption, #s1-year {
-        margin-top: 8px;
-        font-size: 24px;
-        letter-spacing: 0.12em;
-        color: #FFF8E8;
-        text-transform: uppercase;
-      }
-      #s1-year { text-align: right; }
-      #s1-rule {
-        flex: 1;
-        height: 8px;
-        margin: 0 28px 22px;
-        background: #FFC107;
-        transform-origin: 0% 50%;
-      }
-      .s1-right { text-align: right; }
-
-      /* Scene 2 — four studies */
-      .s2 {
-        padding: 40px 72px 104px 80px;
-        gap: 16px;
-      }
-      #s2-kicker { color: #16130F; }
-      .grid {
-        flex: 1;
-        min-height: 0;
-        display: grid;
-        grid-template-columns: 1.28fr 0.92fr;
-        grid-template-rows: 1.18fr 0.86fr;
-        gap: 22px 28px;
-      }
-      .cell {
-        position: relative;
-        min-height: 0;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-      }
-      .cell-label {
-        font-size: 22px;
-        letter-spacing: 0.16em;
-        color: #16130F;
-        text-transform: uppercase;
-      }
-      #ease-cell { justify-content: flex-end; }
-      #ease-disc {
-        position: absolute;
-        width: 320px;
-        height: 320px;
-        border-radius: 50%;
-        background: #FFC107;
-        right: -20px;
-        top: -36px;
-      }
-      #ease-word {
-        position: relative;
-        z-index: 2;
-        font-size: 220px;
-        color: #16130F;
-        letter-spacing: -0.03em;
-      }
-      #ease-svg { width: 100%; height: 120px; display: block; margin-top: 8px; }
-      #ease-note {
-        font-size: 22px;
-        letter-spacing: 0.06em;
-        color: #16130F;
-      }
-      #orb {
-        position: absolute;
-        left: 18px;
-        bottom: 78px;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: #E23A32;
-        z-index: 3;
-      }
-      .mass-well {
-        position: relative;
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
-        margin-top: 10px;
-      }
-      #floor {
+      #plane {
         position: absolute;
         left: 0;
         right: 0;
-        bottom: 0;
-        height: 10px;
-        background: #16130F;
+        top: 78px;
+        bottom: 78px;
+        background: #E7D3A1;
       }
-      #mass {
+      #seam {
         position: absolute;
-        inset: 0;
-        background: #16130F;
+        left: 0;
+        top: 78px;
+        width: 3px;
+        bottom: 78px;
+        background: #0C0B09;
+      }
+      #hold-rule {
+        position: absolute;
+        left: 176px;
+        top: 430px;
+        width: 132px;
+        height: 2px;
+        background: #0C0B09;
+        transform-origin: 0% 50%;
+      }
+      #hold {
+        position: absolute;
+        left: 168px;
+        top: 460px;
+        font-size: 176px;
+        color: #0C0B09;
+      }
+      #form {
+        position: absolute;
+        left: 112px;
+        top: 340px;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        perspective: 900px;
+        font-size: 300px;
+        z-index: 4;
+      }
+      #form span {
+        display: block;
         transform-origin: 50% 100%;
       }
-      #weight-word { font-size: 168px; color: #FFF8E8; letter-spacing: -0.02em; }
-      #rhythm-word {
-        font-size: 96px;
-        color: #16130F;
-        margin-top: 8px;
+
+      #cut-rig {
+        position: absolute;
+        left: 150px;
+        top: 210px;
+        width: 680px;
+        transform: rotate(-8deg);
+        transform-origin: 0% 20%;
       }
-      #bars {
-        margin-top: auto;
-        height: 168px;
+      #cut {
+        font-size: 340px;
+      }
+      #slash {
+        width: 640px;
+        height: 10px;
+        margin: 28px 0 24px;
+        background: #E24B32;
+        transform-origin: 0% 50%;
+      }
+      #frame-word {
+        font-size: 200px;
+      }
+
+      #pulse-word {
+        position: absolute;
+        left: 0;
+        width: 1920px;
+        top: 300px;
+        text-align: center;
+        font-size: 220px;
+      }
+      #skyline {
+        position: absolute;
+        left: 120px;
+        width: 1680px;
+        bottom: 92px;
+        height: 380px;
         display: flex;
         align-items: flex-end;
-        gap: 10px;
+        gap: 14px;
       }
       .bar {
         flex: 1;
-        background: #FFC107;
         transform-origin: 50% 100%;
+        background: #E8C99A;
       }
-      .bar:nth-child(3n) { background: #E23A32; }
-      #space-word {
-        margin-top: auto;
-        margin-bottom: auto;
-        font-size: 168px;
-        color: #16130F;
-        display: flex;
-        gap: 36px;
-        letter-spacing: 0;
-      }
-
-      /* Scene 3 — principles, performed */
-      #band {
+      .bar.bone { background: #F4EFE6; }
+      .bar.signal { background: #E24B32; }
+      #ground {
         position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 318px;
-        background: #16130F;
-        transform-origin: 50% 0%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 0 80px;
-        z-index: 2;
-      }
-      #s3-index { color: #FFF8E8; margin-bottom: 8px; }
-      #anticipation {
-        font-size: 196px;
-        color: #FFC107;
-        letter-spacing: -0.02em;
-      }
-      #band-mark {
-        position: absolute;
-        right: 72px;
-        top: 78px;
-        width: 148px;
-        height: 148px;
-        background: #FFC107;
-      }
-      #stagger {
-        position: absolute;
-        left: 72px;
-        top: 360px;
-        font-size: 300px;
-        color: #FFF8E8;
-        letter-spacing: -0.03em;
-        z-index: 2;
-      }
-      #s3-ring {
-        position: absolute;
-        width: 680px;
-        height: 680px;
-        left: -300px;
-        top: 420px;
-        border-radius: 50%;
-        border: 4px solid #FFF8E8;
-        opacity: 0.4;
-        z-index: 1;
-      }
-      #over-panel {
-        position: absolute;
-        right: 0;
-        top: 548px;
-        width: 860px;
-        height: 460px;
-        background: #FFC107;
-        display: flex;
-        align-items: center;
-        padding: 0 56px;
-        z-index: 2;
-      }
-      #overshoot-word {
-        font-size: 188px;
-        color: #16130F;
-        letter-spacing: -0.03em;
+        left: 120px;
+        bottom: 88px;
+        width: 1680px;
+        height: 2px;
+        background: #F4EFE6;
         transform-origin: 0% 50%;
       }
-      #hold-block {
+
+      #seal {
         position: absolute;
-        left: 72px;
-        top: 820px;
-        z-index: 2;
-      }
-      #hold-word { font-size: 140px; color: #FFF8E8; }
-      #hold-rule {
-        height: 8px;
+        left: 820px;
+        top: 132px;
         width: 280px;
-        margin-top: 10px;
-        background: #FFF8E8;
-        transform-origin: 0% 50%;
+        height: 280px;
       }
-
-      /* Scene 4 — lockup */
-      .s4 {
-        padding: 120px 80px 140px 96px;
-        justify-content: center;
-      }
-      #s4-sq {
+      #lock-copy {
         position: absolute;
-        left: 20px;
-        top: 456px;
-        width: 84px;
-        height: 84px;
-        background: #E23A32;
-        z-index: 5;
-      }
-      .lockup { position: relative; z-index: 2; max-width: 1180px; }
-      #fifteen {
-        font-size: 400px;
-        color: #FFC107;
-        letter-spacing: -0.035em;
-      }
-      #s4-sub {
-        margin-top: 8px;
-        font-size: 84px;
-        color: #FFF8E8;
-        letter-spacing: 0.01em;
-      }
-      #s4-rule {
-        width: 520px;
-        height: 8px;
-        margin: 22px 0;
-        background: #E23A32;
-        transform-origin: 0% 50%;
-      }
-      #s4-meta {
-        font-size: 28px;
-        letter-spacing: 0.16em;
-        color: #FFF8E8;
-        text-transform: uppercase;
-      }
-      #s4-circle {
-        width: 860px;
-        height: 860px;
-        right: -240px;
-        top: 80px;
-        background: #FFC107;
-      }
-
-      /* Dip + wipes sit above the dock so the hit is full-frame */
-      #dip {
-        position: absolute;
-        inset: 0;
-        background: #FFC107;
-        opacity: 0;
-        z-index: 36;
-      }
-      .wipe {
-        position: absolute;
-        top: 0;
         left: 0;
         width: 1920px;
-        height: 1080px;
-        transform: translateX(-1920px);
+        top: 470px;
+        text-align: center;
       }
-      #wipe-a { background: #FFC107; z-index: 41; }
-      #wipe-b { background: #E23A32; z-index: 42; }
-      #wipe-c { background: #FFF8E8; z-index: 43; }
-      #wipe-d { background: #16130F; z-index: 44; }
-      #wipe-e { background: #FFC107; z-index: 45; }
-
-      #dock {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 72px;
-        z-index: 30;
-        background: #16130F;
-        display: flex;
-        align-items: center;
-        gap: 22px;
-        padding: 0 28px 0 36px;
-      }
-      #dock-label {
-        width: 132px;
-        font-size: 24px;
-        letter-spacing: 0.14em;
-        color: #FFF8E8;
-      }
-      #track-wrap {
-        position: relative;
-        flex: 1;
-        height: 28px;
-      }
-      #track {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 12px;
-        height: 4px;
-        background: #3A342C;
-      }
-      #fill {
-        height: 100%;
-        width: 100%;
-        background: #FFC107;
-        transform-origin: 0% 50%;
-        transform: scaleX(0);
-      }
-      #playhead {
-        position: absolute;
-        left: 0;
-        top: 2px;
-        width: 4px;
-        height: 24px;
-        background: #FFC107;
-      }
-      #tc {
+      #mark { font-size: 188px; }
+      #lock-rule {
         width: 168px;
-        text-align: right;
-        font-size: 26px;
-        letter-spacing: 0.06em;
-        color: #FFF8E8;
-        font-variant-numeric: tabular-nums;
+        height: 2px;
+        margin: 22px auto 0;
+        background: #E8C99A;
+        transform-origin: 50% 50%;
+      }
+      #lock-sub {
+        margin-top: 20px;
+        font-family: "Instrument Sans", sans-serif;
+        font-size: 30px;
+        letter-spacing: 0.22em;
+        color: #F4EFE6;
+      }
+      #lock-time {
+        margin-top: 16px;
+        font-family: "Instrument Sans", sans-serif;
+        font-size: 22px;
+        letter-spacing: 0.28em;
+        color: #E8C99A;
+      }
+
+      #streak {
+        position: absolute;
+        top: -180px;
+        left: 0;
+        width: 200px;
+        height: 1500px;
+        background: linear-gradient(90deg, rgba(244, 239, 230, 0), rgba(244, 239, 230, 0.72), rgba(244, 239, 230, 0));
+        opacity: 0;
+        z-index: 12;
+        pointer-events: none;
       }
     </style>
   </head>
@@ -465,156 +352,101 @@
       id="root"
       data-composition-id="showreel"
       data-start="0"
-      data-duration="15"
+      data-duration="30"
       data-width="1920"
       data-height="1080"
     >
+      <div id="glow"></div>
+      <div id="shaft"></div>
+      <div id="vignette"></div>
+      <div id="rail-top"></div>
+      <div id="rail-bot"></div>
+
       <div id="scene1" class="scene">
-        <div id="s1-bar"></div>
-        <div id="s1-marks">
-          <i class="mark tl"></i>
-          <i class="mark tr"></i>
-          <i class="mark bl"></i>
-          <i class="mark br"></i>
-        </div>
-        <div id="s1-ring"></div>
-        <div id="s1-circle"></div>
-        <div class="stage s1">
-          <div id="s1-kicker" class="kicker">01 &nbsp;/&nbsp; Open</div>
-          <div id="motion" class="display">
-            <span>M</span><span>O</span><span>T</span><span>I</span><span>O</span><span>N</span>
-          </div>
-          <div class="s1-bottom">
-            <div>
-              <div id="design-word" class="display">DESIGN</div>
-              <div id="s1-caption">Kinetic type on a timeline</div>
-            </div>
-            <div id="s1-rule"></div>
-            <div class="s1-right">
-              <div id="reel-word" class="display">REEL</div>
-              <div id="s1-year">2026</div>
-            </div>
+        <div id="glass-rig">
+          <div id="glass">
+            <div id="shine"></div>
+            <div id="glass-inset"></div>
           </div>
         </div>
+        <div id="s1-rule"></div>
+        <div id="after" class="serif">After</div>
+        <div id="light" class="serif">light</div>
       </div>
 
       <div id="scene2" class="scene">
-        <div class="stage s2">
-          <div id="s2-kicker" class="kicker">02 &nbsp;/&nbsp; Four studies</div>
-          <div class="grid">
-            <div class="cell" id="ease-cell">
-              <div id="ease-disc"></div>
-              <div id="ease-label" class="cell-label">Sine ease</div>
-              <div id="ease-word" class="display">
-                <span>E</span><span>A</span><span>S</span><span>E</span>
-              </div>
-              <svg id="ease-svg" viewBox="0 0 400 130" fill="none">
-                <path
-                  id="ease-path"
-                  d="M12 118 C 36 118, 48 16, 388 18"
-                  stroke="#E23A32"
-                  stroke-width="8"
-                  stroke-linecap="round"
-                />
-              </svg>
-              <div id="ease-note">0.22,&nbsp;1,&nbsp;0.36,&nbsp;1</div>
-              <div id="orb"></div>
-            </div>
-
-            <div class="cell" id="weight-cell">
-              <div id="weight-kicker" class="cell-label">Gravity</div>
-              <div class="mass-well">
-                <div id="floor"></div>
-                <div id="mass">
-                  <div id="weight-word" class="display">WEIGHT</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="cell" id="rhythm-cell">
-              <div id="rhythm-kicker" class="cell-label">Meter</div>
-              <div id="rhythm-word" class="display">RHYTHM</div>
-              <div id="bars">
-                <div class="bar" style="height: 22%"></div>
-                <div class="bar" style="height: 38%"></div>
-                <div class="bar" style="height: 28%"></div>
-                <div class="bar" style="height: 62%"></div>
-                <div class="bar" style="height: 34%"></div>
-                <div class="bar" style="height: 78%"></div>
-                <div class="bar" style="height: 46%"></div>
-                <div class="bar" style="height: 96%"></div>
-                <div class="bar" style="height: 30%"></div>
-                <div class="bar" style="height: 70%"></div>
-                <div class="bar" style="height: 48%"></div>
-                <div class="bar" style="height: 100%"></div>
-              </div>
-            </div>
-
-            <div class="cell" id="space-cell">
-              <div id="space-kicker" class="cell-label">Tracking</div>
-              <div id="space-word" class="display">
-                <span>S</span><span>P</span><span>A</span><span>C</span><span>E</span>
-              </div>
-            </div>
-          </div>
+        <svg id="lens" viewBox="0 0 200 200" fill="none">
+          <circle id="lens-ring" cx="100" cy="100" r="86" stroke="#E8C99A" stroke-width="2.5" stroke-dasharray="540" stroke-dashoffset="540" />
+          <path id="lens-cut" d="M100 22 V178" stroke="#E24B32" stroke-width="2.5" stroke-dasharray="156" stroke-dashoffset="156" />
+        </svg>
+        <div id="lens-word" class="serif">Lens</div>
+        <div id="edge-tick"></div>
+        <div id="edge" class="serif">
+          <span>E</span><span>d</span><span>g</span><span>e</span>
         </div>
       </div>
 
       <div id="scene3" class="scene">
-        <div id="s3-ring"></div>
-        <div id="band">
-          <div id="s3-index" class="kicker">03 &nbsp;/&nbsp; Principles</div>
-          <div id="anticipation" class="display">ANTICIPATION</div>
-          <div id="band-mark"></div>
+        <div id="form" class="serif">
+          <span>F</span><span>o</span><span>r</span><span>m</span>
         </div>
-        <div id="stagger" class="display">
-          <span>S</span><span>T</span><span>A</span><span>G</span><span>G</span><span>E</span><span>R</span>
-        </div>
-        <div id="over-panel">
-          <div id="overshoot-word" class="display">OVERSHOOT</div>
-        </div>
-        <div id="hold-block">
-          <div id="hold-word" class="display">HOLD</div>
-          <div id="hold-rule"></div>
-        </div>
+      </div>
+
+      <div id="plane-wrap">
+        <div id="plane"></div>
+        <div id="seam"></div>
+        <div id="hold-rule"></div>
+        <div id="hold" class="serif">Hold</div>
       </div>
 
       <div id="scene4" class="scene">
-        <div id="s4-spine"></div>
-        <div id="s4-sq"></div>
-        <div id="s4-circle"></div>
-        <div class="stage s4">
-          <div class="lockup">
-            <div id="fifteen" class="display">
-              <span>F</span><span>I</span><span>F</span><span>T</span><span>E</span><span>E</span><span>N</span>
-            </div>
-            <div id="s4-sub" class="display">MOTION DESIGN</div>
-            <div id="s4-rule"></div>
-            <div id="s4-meta">Showreel &nbsp;·&nbsp; 00:15 &nbsp;·&nbsp; 2026</div>
-          </div>
+        <div id="cut-rig">
+          <div id="cut" class="serif">Cut</div>
+          <div id="slash"></div>
+          <div id="frame-word" class="serif">Frame</div>
         </div>
       </div>
 
-      <div id="dip"></div>
-      <div id="wipe-a" class="wipe"></div>
-      <div id="wipe-b" class="wipe"></div>
-      <div id="wipe-c" class="wipe"></div>
-      <div id="wipe-d" class="wipe"></div>
-      <div id="wipe-e" class="wipe"></div>
-
-      <footer id="dock">
-        <div id="dock-label">30 FPS</div>
-        <div id="track-wrap">
-          <div id="track"><div id="fill"></div></div>
-          <div id="playhead"></div>
+      <div id="scene5" class="scene">
+        <div id="pulse-word" class="serif">Pulse</div>
+        <div id="ground"></div>
+        <div id="skyline">
+          <div class="bar" style="height: 140px"></div>
+          <div class="bar bone" style="height: 240px"></div>
+          <div class="bar" style="height: 180px"></div>
+          <div class="bar" style="height: 320px"></div>
+          <div class="bar bone" style="height: 200px"></div>
+          <div class="bar" style="height: 280px"></div>
+          <div class="bar" style="height: 160px"></div>
+          <div class="bar signal" style="height: 360px"></div>
+          <div class="bar" style="height: 220px"></div>
+          <div class="bar bone" style="height: 300px"></div>
+          <div class="bar" style="height: 190px"></div>
+          <div class="bar" style="height: 340px"></div>
+          <div class="bar" style="height: 150px"></div>
+          <div class="bar bone" style="height: 260px"></div>
         </div>
-        <div id="tc">00:00:00</div>
-      </footer>
+      </div>
+
+      <div id="scene6" class="scene">
+        <svg id="seal" viewBox="0 0 200 200" fill="none">
+          <circle id="seal-ring" cx="100" cy="100" r="86" stroke="#E8C99A" stroke-width="2" stroke-dasharray="540" stroke-dashoffset="540" />
+          <circle cx="100" cy="100" r="5" fill="#E24B32" />
+        </svg>
+        <div id="lock-copy">
+          <div id="mark" class="serif">Afterlight</div>
+          <div id="lock-rule"></div>
+          <div id="lock-sub">Motion Design</div>
+          <div id="lock-time">00:30</div>
+        </div>
+      </div>
+
+      <div id="streak"></div>
 
       <audio
         id="score"
         data-start="0"
-        data-duration="15"
+        data-duration="30"
         data-track-index="1"
         data-volume="1"
         src="audio/score.wav"
@@ -626,182 +458,197 @@
       var tl = gsap.timeline({ paused: true });
 
       tl.addLabel("open", 0);
-      tl.addLabel("zoom", 3.42);
-      tl.addLabel("studies", 3.75);
-      tl.addLabel("wipe", 6.62);
-      tl.addLabel("principles", 6.98);
-      tl.addLabel("dip", 11.08);
-      tl.addLabel("lockup", 11.25);
-      tl.addLabel("out", 14.42);
+      tl.addLabel("xA", 5.15);
+      tl.addLabel("xB", 10.15);
+      tl.addLabel("xC", 15.4);
+      tl.addLabel("xD", 21.35);
+      tl.addLabel("xE", 25.85);
+      tl.addLabel("out", 28.35);
 
-      var clock = { frame: 0 };
-      tl.to(clock, {
-        frame: 450,
-        duration: 15,
-        ease: "none",
-        onUpdate: function () {
-          var frame = Math.max(0, Math.min(449, Math.round(clock.frame)));
-          var ss = Math.floor(frame / 30);
-          var ff = frame % 30;
-          var pad = function (n) { return (n < 10 ? "0" : "") + n; };
-          document.getElementById("tc").textContent = "00:" + pad(ss) + ":" + pad(ff);
-        }
-      }, 0);
-
-      var travel = document.getElementById("track-wrap").getBoundingClientRect().width - 4;
-      if (!(travel > 200)) travel = 1480;
-      tl.fromTo("#fill", { scaleX: 0 }, { scaleX: 1, duration: 15, ease: "none" }, 0);
-      tl.fromTo("#playhead", { x: 0 }, { x: travel, duration: 15, ease: "none" }, 0);
-
-      /* Scene 1 — poster. Each hit is a different verb. */
-      tl.from("#s1-bar", { scaleY: 0, duration: 0.46, ease: "expo.out" }, "open+=0.12");
-      tl.from("#s1-marks", { opacity: 0, duration: 0.35, ease: "power2.out" }, "open+=0.18");
-      tl.from("#s1-kicker", { x: -32, opacity: 0, duration: 0.4, ease: "power3.out" }, "open+=0.22");
-      tl.from("#motion span", {
-        y: 180, opacity: 0, duration: 0.48, ease: "expo.out", stagger: 0.042
-      }, "open+=0.2");
-      tl.from("#design-word", {
-        x: -90, rotation: -3, opacity: 0, duration: 0.46, ease: "back.out(1.7)"
-      }, "open+=0.9");
-      tl.from("#reel-word", {
-        y: 80, opacity: 0, duration: 0.4, ease: "power4.out"
-      }, "open+=1.38");
-      tl.from("#s1-circle", {
-        scale: 0, rotation: -18, opacity: 0, duration: 0.52, ease: "back.out(1.9)"
-      }, "open+=1.38");
-      tl.from("#s1-rule", { scaleX: 0, duration: 0.5, ease: "power3.inOut" }, "open+=1.62");
-      tl.from("#s1-caption", { y: 16, opacity: 0, duration: 0.36, ease: "power2.out" }, "open+=1.78");
-      tl.from("#s1-year", { opacity: 0, duration: 0.3, ease: "power1.out" }, "open+=1.9");
-      tl.fromTo("#s1-ring", { rotation: 0 }, {
-        rotation: 22, duration: 2.0, ease: "sine.inOut"
-      }, "open+=1.2");
-      tl.fromTo("#s1-circle", { scale: 1 }, {
-        scale: 1.055, duration: 0.7, ease: "sine.inOut", yoyo: true, repeat: 1
-      }, "open+=2.05");
-
-      /* Zoom through into the studies. Origin sits on the type. */
-      tl.to("#scene1", {
-        scale: 2.12,
-        opacity: 0,
-        filter: "blur(6px)",
-        duration: 0.32,
-        ease: "power3.in",
-        transformOrigin: "28% 46%"
-      }, "zoom");
-      tl.fromTo("#scene2",
-        { scale: 0.6, opacity: 0, filter: "blur(6px)" },
-        { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.36, ease: "power3.out" },
-        "zoom+=0.14"
-      );
-
-      /* Scene 2 — four studies, each with its own physics. */
-      tl.from("#s2-kicker", { y: -18, opacity: 0, duration: 0.32, ease: "power4.out" }, "studies+=0.02");
-      tl.from("#ease-disc", { scale: 0, opacity: 0, duration: 0.45, ease: "back.out(1.6)" }, "studies+=0.06");
-      tl.from("#ease-label", { opacity: 0, y: 10, duration: 0.28, ease: "power1.out" }, "studies+=0.12");
-      tl.from("#ease-word span", {
-        x: -40, opacity: 0, duration: 0.62, ease: "sine.out", stagger: 0.07
-      }, "studies+=0.16");
-      var easePath = document.getElementById("ease-path");
-      var easeLen = easePath.getTotalLength();
-      easePath.style.strokeDasharray = String(easeLen);
-      tl.fromTo(easePath,
-        { strokeDashoffset: easeLen },
-        { strokeDashoffset: 0, duration: 1.05, ease: "power2.inOut" },
-        "studies+=0.28"
-      );
-      tl.from("#ease-note", { opacity: 0, duration: 0.3, ease: "power1.inOut" }, "studies+=1.05");
-      tl.from("#orb", { scale: 0, opacity: 0, duration: 0.28, ease: "elastic.out(1, 0.55)" }, "studies+=0.34");
-      tl.fromTo("#orb", { x: 0 }, {
-        x: 340, duration: 0.78, ease: "sine.inOut", yoyo: true, repeat: 3
-      }, "studies+=0.5");
-
-      tl.from("#weight-kicker", { opacity: 0, x: 16, duration: 0.28, ease: "power3.out" }, "studies+=0.72");
-      tl.to("#weight-cell", { scale: 0.97, duration: 0.08, ease: "power1.in", transformOrigin: "50% 80%" }, "studies+=0.86");
-      tl.to("#weight-cell", { scale: 1, duration: 0.1, ease: "expo.inOut" }, "studies+=0.96");
-      tl.fromTo("#mass",
-        { y: -540, scaleY: 1.06 },
-        { y: -575, scaleY: 1.06, duration: 0.07, ease: "power1.out" },
-        "studies+=0.94"
-      );
-      tl.to("#mass", { y: 0, scaleY: 1.06, duration: 0.22, ease: "power4.in" }, "studies+=1.01");
-      tl.to("#mass", { scaleY: 0.88, duration: 0.06, ease: "circ.out" }, "studies+=1.25");
-      tl.to("#mass", { scaleY: 1.05, duration: 0.08, ease: "power3.out" }, "studies+=1.33");
-      tl.to("#mass", { scaleY: 1, duration: 0.12, ease: "sine.inOut" }, "studies+=1.43");
-
-      tl.from("#rhythm-kicker", { y: 12, opacity: 0, duration: 0.26, ease: "power2.out" }, "studies+=1.72");
-      tl.from("#rhythm-word", { x: -30, opacity: 0, duration: 0.34, ease: "expo.out" }, "studies+=1.8");
-      tl.from(".bar", {
-        scaleY: 0, duration: 0.26, ease: "back.out(1.8)", stagger: 0.035
-      }, "studies+=1.9");
-
-      tl.from("#space-kicker", { opacity: 0, duration: 0.24, ease: "power1.out" }, "studies+=2.15");
-      document.querySelectorAll("#space-word span").forEach(function (el, i) {
-        tl.from(el, {
-          x: (2 - i) * 48,
-          y: 32,
+      function handoff(outEl, inEl, label) {
+        tl.to(outEl, {
           opacity: 0,
+          scale: 1.04,
           duration: 0.55,
-          ease: "power3.inOut"
-        }, "studies+=2.28");
-      });
-
-      /* Staggered blocks. Scene swaps while covered. */
-      var wipes = ["#wipe-a", "#wipe-b", "#wipe-c", "#wipe-d", "#wipe-e"];
-      for (var i = 0; i < wipes.length; i++) {
-        tl.set(wipes[i], { x: -1920, immediateRender: false }, "wipe-=0.02");
-        tl.to(wipes[i], { x: 0, duration: 0.2, ease: "power4.inOut" }, "wipe+=" + (i * 0.035));
+          ease: "power2.inOut",
+          transformOrigin: "50% 50%"
+        }, label);
+        tl.fromTo(inEl, {
+          opacity: 0,
+          scale: 0.975
+        }, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.55,
+          ease: "power2.inOut",
+          immediateRender: false,
+          transformOrigin: "50% 50%"
+        }, label);
       }
-      tl.set("#scene2", { opacity: 0, immediateRender: false }, "wipe+=0.32");
-      tl.set("#scene3", { opacity: 1, immediateRender: false }, "wipe+=0.32");
-      for (var j = 0; j < wipes.length; j++) {
-        tl.to(wipes[j], { x: 1920, duration: 0.2, ease: "power4.inOut" }, "wipe+=" + (0.38 + j * 0.035));
+
+      function sweep(label, fromX, toX) {
+        tl.fromTo("#streak", {
+          x: fromX,
+          rotation: 16
+        }, {
+          x: toX,
+          rotation: 16,
+          duration: 0.5,
+          ease: "power2.inOut",
+          immediateRender: false
+        }, label);
+        tl.fromTo("#streak", {
+          opacity: 0
+        }, {
+          opacity: 0.8,
+          duration: 0.14,
+          ease: "power1.out",
+          immediateRender: false
+        }, label);
+        tl.to("#streak", {
+          opacity: 0,
+          duration: 0.18,
+          ease: "power1.in"
+        }, label + "+=0.26");
       }
 
-      /* Scene 3 — the word performs the principle. */
-      tl.from("#band", { scaleY: 0, duration: 0.3, ease: "expo.inOut" }, "principles+=0.12");
-      tl.from("#s3-index", { x: -18, opacity: 0, duration: 0.28, ease: "power2.out" }, "principles+=0.28");
-      tl.from("#band-mark", { scale: 0, rotation: -8, opacity: 0, duration: 0.36, ease: "back.out(1.7)" }, "principles+=0.34");
-      tl.from("#anticipation", { opacity: 0, duration: 0.16, ease: "power2.out" }, "principles+=0.46");
-      tl.fromTo("#anticipation", { y: 0 }, { y: 26, duration: 0.08, ease: "power1.in" }, "principles+=0.46");
-      tl.to("#anticipation", { y: 0, duration: 0.36, ease: "power4.out" }, "principles+=0.56");
-      tl.from("#stagger span", {
-        x: -56, opacity: 0, duration: 0.34, ease: "expo.out", stagger: 0.07
-      }, "principles+=0.94");
-      tl.from("#over-panel", { x: 240, opacity: 0, duration: 0.36, ease: "power4.out" }, "principles+=1.48");
-      tl.from("#overshoot-word", {
-        scale: 1.26, opacity: 0, duration: 0.48, ease: "back.out(2.1)"
-      }, "principles+=1.88");
-      tl.from("#hold-word", { opacity: 0, y: 12, duration: 0.7, ease: "power1.out" }, "principles+=2.1");
-      tl.from("#hold-rule", { scaleX: 0, duration: 0.4, ease: "power3.inOut" }, "principles+=2.45");
-      tl.fromTo("#s3-ring", { rotation: 0 }, {
-        rotation: 18, duration: 1.9, ease: "sine.inOut"
-      }, "principles+=2.05");
+      tl.from("#glow", { scale: 0.84, opacity: 0, duration: 1.05, ease: "power2.out" }, "open");
+      tl.to("#glow", { x: -36, duration: 7.5, ease: "sine.inOut" }, "open+=1.2");
+      tl.from("#shaft", { y: -180, opacity: 0, duration: 0.9, ease: "power3.out" }, "open");
+      tl.to("#shaft", { opacity: 0, duration: 0.5, ease: "power1.in" }, "xE-=0.7");
+      tl.from("#rail-top", { scaleX: 0, duration: 0.7, ease: "power3.inOut" }, "open+=0.12");
+      tl.from("#rail-bot", { scaleX: 0, duration: 0.7, ease: "power3.inOut" }, "open+=0.2");
 
-      /* Yellow dip, then the lockup. */
-      tl.to("#scene3", { opacity: 0, duration: 0.16, ease: "power2.in" }, "dip");
-      tl.to("#dip", { opacity: 1, duration: 0.12, ease: "power2.in" }, "dip");
-      tl.fromTo("#scene4",
-        { opacity: 0 },
-        { opacity: 1, duration: 0.26, ease: "power2.out", immediateRender: false },
-        "dip+=0.22"
-      );
-      tl.to("#dip", { opacity: 0, duration: 0.22, ease: "power2.out" }, "dip+=0.22");
+      tl.from("#glass", {
+        rotateY: -70,
+        rotateX: 16,
+        z: -280,
+        opacity: 0,
+        duration: 1.15,
+        ease: "power4.out",
+        transformOrigin: "50% 50%"
+      }, "open+=0.08");
+      tl.to("#glass", {
+        rotateY: -14,
+        rotateX: 6,
+        duration: 2.3,
+        ease: "sine.inOut"
+      }, "open+=1.4");
+      tl.from("#glass-inset", { opacity: 0, duration: 0.4, ease: "power1.out" }, "open+=0.4");
+      tl.fromTo("#shine", { x: -60, rotation: 18 }, {
+        x: 420,
+        rotation: 18,
+        duration: 1.55,
+        ease: "power2.inOut"
+      }, "open+=0.36");
+      tl.from("#s1-rule", { scaleX: 0, duration: 0.5, ease: "power3.inOut" }, "open+=0.2");
+      tl.from("#after", { y: 64, opacity: 0, duration: 0.66, ease: "power4.out" }, "open+=0.32");
+      tl.from("#light", { y: 58, opacity: 0, duration: 0.6, ease: "power4.out" }, "open+=0.58");
 
-      tl.from("#s4-spine", { scaleY: 0, duration: 0.4, ease: "expo.out" }, "lockup+=0.12");
-      tl.from("#s4-sq", { scale: 0, rotation: -10, opacity: 0, duration: 0.38, ease: "back.out(1.8)" }, "lockup+=0.22");
-      tl.from("#s4-circle", { scale: 0.72, opacity: 0, duration: 0.62, ease: "power4.out" }, "lockup+=0.1");
-      tl.from("#fifteen span", {
-        y: 90, opacity: 0, duration: 0.4, ease: "expo.out", stagger: 0.038
-      }, "lockup+=0.2");
-      tl.from("#s4-sub", { y: 24, opacity: 0, duration: 0.36, ease: "power3.out" }, "lockup+=0.62");
-      tl.from("#s4-rule", { scaleX: 0, duration: 0.42, ease: "power3.inOut" }, "lockup+=0.78");
-      tl.from("#s4-meta", { opacity: 0, duration: 0.36, ease: "power1.out" }, "lockup+=0.96");
-      tl.fromTo("#s4-circle", { scale: 1 }, {
-        scale: 1.04, duration: 1.05, ease: "sine.inOut", yoyo: true, repeat: 1
-      }, "lockup+=1.05");
+      handoff("#scene1", "#scene2", "xA");
+      sweep("xA", -820, 2360);
 
-      tl.to("#scene4", { opacity: 0, duration: 0.5, ease: "power2.in" }, "out");
-      tl.to("#dock", { opacity: 0, duration: 0.46, ease: "power1.in" }, "out+=0.04");
+      tl.fromTo("#lens-ring", { strokeDashoffset: 540 }, {
+        strokeDashoffset: 0,
+        duration: 0.85,
+        ease: "power3.inOut",
+        immediateRender: false
+      }, "xA+=0.06");
+      tl.fromTo("#lens-cut", { strokeDashoffset: 156 }, {
+        strokeDashoffset: 0,
+        duration: 0.32,
+        ease: "power4.out",
+        immediateRender: false
+      }, "xA+=0.62");
+      tl.from("#lens-word", { y: 26, opacity: 0, duration: 0.4, ease: "power3.out" }, "xA+=0.28");
+      tl.from("#edge-tick", { scaleX: 0, duration: 0.38, ease: "power3.inOut" }, "xA+=0.08");
+      tl.from("#edge span", {
+        y: 80,
+        opacity: 0,
+        duration: 0.4,
+        ease: "expo.out",
+        stagger: 0.045
+      }, "xA+=0.1");
+
+      handoff("#scene2", "#scene3", "xB");
+      sweep("xB", 2500, -860);
+      tl.fromTo("#plane-wrap", { x: 1860, opacity: 0 }, {
+        x: 1280,
+        opacity: 1,
+        duration: 0.7,
+        ease: "power4.out",
+        immediateRender: false
+      }, "xB");
+      tl.from("#form span", {
+        rotateX: -78,
+        y: 60,
+        opacity: 0,
+        duration: 0.46,
+        ease: "power4.out",
+        stagger: 0.05,
+        transformOrigin: "50% 100%"
+      }, "xB+=0.28");
+      tl.from("#seam", { scaleY: 0, duration: 0.45, ease: "power3.out", transformOrigin: "50% 0%" }, "xB+=0.08");
+      tl.from("#hold-rule", { scaleX: 0, duration: 0.35, ease: "power3.inOut" }, "xB+=1.0");
+      tl.from("#hold", { y: 40, opacity: 0, duration: 0.42, ease: "power3.out" }, "xB+=1.08");
+
+      handoff("#scene3", "#scene4", "xC");
+      sweep("xC", -820, 2360);
+      tl.to("#plane-wrap", {
+        x: 2140,
+        opacity: 0,
+        duration: 0.55,
+        ease: "power3.in"
+      }, "xC");
+      tl.from("#cut-rig", {
+        rotation: -18,
+        opacity: 0,
+        duration: 0.55,
+        ease: "power3.out",
+        transformOrigin: "0% 20%"
+      }, "xC+=0.06");
+      tl.from("#cut", { y: 48, opacity: 0, duration: 0.42, ease: "power4.out" }, "xC+=0.12");
+      tl.from("#slash", { scaleX: 0, duration: 0.32, ease: "power4.inOut" }, "xC+=0.28");
+      tl.from("#frame-word", { y: 28, opacity: 0, duration: 0.4, ease: "power3.out" }, "xC+=0.42");
+
+      handoff("#scene4", "#scene5", "xD");
+      sweep("xD", -820, 2360);
+      tl.from("#pulse-word", { y: 36, opacity: 0, duration: 0.42, ease: "power3.out" }, "xD+=0.08");
+      tl.from("#ground", { scaleX: 0, duration: 0.4, ease: "power2.out" }, "xD+=0.06");
+      tl.from("#skyline .bar", {
+        scaleY: 0,
+        duration: 0.46,
+        ease: "back.out(1.4)",
+        stagger: 0.04,
+        transformOrigin: "50% 100%"
+      }, "xD+=0.12");
+
+      handoff("#scene5", "#scene6", "xE");
+      sweep("xE", -820, 2360);
+      tl.fromTo("#seal-ring", { strokeDashoffset: 540 }, {
+        strokeDashoffset: 0,
+        duration: 0.75,
+        ease: "power3.inOut",
+        immediateRender: false
+      }, "xE+=0.08");
+      tl.from("#seal", {
+        rotation: -24,
+        opacity: 0,
+        duration: 0.55,
+        ease: "power3.out",
+        transformOrigin: "50% 50%"
+      }, "xE+=0.08");
+      tl.to("#seal", { rotation: 16, duration: 1.1, ease: "sine.inOut" }, "xE+=0.8");
+      tl.from("#mark", { y: 42, opacity: 0, duration: 0.5, ease: "power4.out" }, "xE+=0.16");
+      tl.from("#lock-rule", { scaleX: 0, duration: 0.36, ease: "power3.inOut" }, "xE+=0.42");
+      tl.from("#lock-sub", { y: 16, opacity: 0, duration: 0.32, ease: "power2.out" }, "xE+=0.5");
+      tl.from("#lock-time", { y: 12, opacity: 0, duration: 0.28, ease: "power2.out" }, "xE+=0.62");
+
+      tl.to("#scene6", { opacity: 0, duration: 1.4, ease: "power2.in" }, "out");
+      tl.to("#glow", { opacity: 0, duration: 1.2, ease: "power1.in" }, "out");
+      tl.to("#rail-top", { opacity: 0, duration: 1.1, ease: "power1.in" }, "out");
+      tl.to("#rail-bot", { opacity: 0, duration: 1.1, ease: "power1.in" }, "out");
+      tl.to("#vignette", { opacity: 0, duration: 1.0, ease: "power1.in" }, "out");
 
       window.__timelines["showreel"] = tl;
     </script>

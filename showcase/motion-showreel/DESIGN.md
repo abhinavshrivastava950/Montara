@@ -1,31 +1,49 @@
-# DESIGN — Fifteen / Motion Showreel
+# DESIGN — Afterlight
 
 ## Style Prompt
 
-A 15-second résumé reel in the Maximalist Type tradition (Paula Scher): the words perform the ideas they name. Ink, hot red, and signal yellow. One condensed poster face shouting, one mono face keeping time. An edit-suite dock stays pinned to the bottom for the whole piece so the picture can change and the timeline never does. Four scenes, two bars each, at 128 BPM. Zoom through into the studies, staggered color blocks into the principles, a yellow dip into the lockup, then a fade to ink.
+A 30-second Hollywood title sequence. One camera, one warm key, six shots that do not repeat each other. Dark optical stage, glass, a drawn lens, a brass plane, a diagonal cut, a rhythmic skyline, then a centered seal. Instrument Serif Italic carries the words. Instrument Sans is only the end card. Light moves across every cut. Type is solid, large, and always on one field.
+
+## Duration and samples
+
+30.0 seconds, 30 fps. Contrast samples land at 3.0, 9.0, 15.0, 21.0, and 27.0. Those frames are settled hero frames. Transitions sit at 5.15, 10.15, 15.40, 21.35, and 25.85. The fade to void starts at 28.35, after the last sample.
+
+## Shots
+
+1. Open — “After” / “light” on the left, a glass slab in perspective on the right.
+2. Marks — a drawn lens and the word “Lens”, with “Edge” large on the right and one red tick.
+3. Plane — “Form” flips on the void; a brass panel arrives from the right and stops; “Hold” sits in ink on the brass only.
+4. Cut — the rig is rotated; “Cut”, a red slash, then “Frame”.
+5. Pulse — one word over a skyline of bars. No sample falls inside this shot; it is fully gone before 27.0.
+6. Lockup — centered seal, “Afterlight”, “Motion Design”, “00:30”. Fade only this card.
+
+## Transitions
+
+Crossfades of about half a second. The outgoing shot scales to 1.04 while the incoming shot scales from 0.975 to 1. A light streak sweeps with each handoff. Glow and the gate rails stay up for the whole film and fade only at the end. The shaft leaves before the lockup. No full-frame cream flash.
 
 ## Colors
 
-- Ink `#16130F` — scenes 1 and 4, the dock, weight mass, type on yellow
-- Paper `#F4EFE4` — scene 2 ground
-- Red field `#C4322C` — scene 3 ground (small cream type must clear 4.5:1)
-- Hot red `#E23A32` — shapes and the word DESIGN (large type only)
-- Yellow `#FFC107` — type on ink only, bars, disc, playhead, dip flash
-- Cream `#FFF8E8` — type on ink and on the red field
+- Void `#0C0B09` — the room
+- Bone `#F4EFE6` — primary type on void (17.2:1)
+- Brass light `#E8C99A` — the second line, rings, rules (12.4:1 on void)
+- Brass plane `#E7D3A1` — the panel (ink on it is 13.3:1)
+- Ink `#0C0B09` — type that sits entirely on the brass plane
+- Signal `#E24B32` — the tick, the slash, one bar. Never a text field.
 
 ## Typography
 
-- Display: Bebas Neue. Poster voice. Tight tracking, huge sizes.
-- Data: IBM Plex Mono. Editor voice — kickers, timecode, bezier readout, dock.
+- Display: Instrument Serif Italic, vendored from the OFL files in `fonts/`.
+- End card: Instrument Sans.
+- Title case. No gradient text. No animated letter-spacing.
 
-The pairing is the job: expression versus the timeline that holds it.
+## Sound
+
+120 BPM so 30 seconds is 15 bars. Sparse kicks and a drone under scene-locked effects: glass tones on the open, a lens tick, a brass stab and a park thud, a blade crack, bar hits locked to the skyline, a riser, then one trailer hit on the lockup. The picture mix is stereo. The same mix is delivered as Dolby Digital 5.1 (AC-3), channel order FL FR FC LFE BL BR, with whooshes crossing the room and impacts in the center and the LFE.
 
 ## What NOT to Do
 
-- No gradient text, no cyan or purple neon, no pure `#000` or `#fff`.
-- No identical cards, no centered stack as the only layout.
-- No Inter, Roboto, Syne, or a second sans.
-- Yellow type only on ink. Small type on the red field only in cream.
-- No exit tweens on scene content. Transitions are the exits. Fade only the lockup.
-- No infinite repeats. No linear motion except the playhead clock.
-- No ghost type at low opacity — contrast audit will fail it. Depth comes from shapes.
+- No labeled studies (no “ease”, “gravity”, “anticipation”).
+- No edit-suite dock, playhead, or timecode chrome.
+- No identical cards. The lockup is the only centered ceremony.
+- No exit tweens on words. The crossfade, the streak, and the moving plane are the exits. Fade only the lockup.
+- No infinite repeats. No ghost type.
