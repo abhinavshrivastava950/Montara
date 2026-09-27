@@ -161,10 +161,12 @@ def main():
             bass_at(t, roots[bar], dur=dur, gain=gain)
 
     # Section hits land on bars 3, 5, and 7 (3.75s, 7.50s, 11.25s).
-    for peak, root in ((3.75, 65.41), (7.50, 73.42), (11.25, 55.0)):
+    # Peaks sit on the zoom, the color-block cover, and the yellow dip.
+    for peak, root in ((3.75, 65.41), (6.95, 73.42), (11.25, 55.0)):
         whoosh_at(peak)
         stab_at(peak, root * 2.0)
-        kick_at(peak)
+        if peak > 7:
+            kick_at(peak)
 
     # Word accents, kept quieter than the drums.
     for t, f in (
@@ -236,7 +238,7 @@ def main():
             f"measured_LRA={stats['input_lra']}:"
             f"measured_thresh={stats['input_thresh']}:"
             f"offset={stats['target_offset']}:linear=true,"
-            "alimiter=limit=0.841:attack=5:release=40:level=disabled",
+            "alimiter=limit=0.80:attack=5:release=40:level=disabled",
             "-ar", "48000",
             path,
         ],

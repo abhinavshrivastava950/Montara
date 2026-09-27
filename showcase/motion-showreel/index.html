@@ -32,7 +32,7 @@
       #scene4 { z-index: 4; background: #16130F; opacity: 0; }
 
       .display {
-        font-family: "Bebas Neue", Impact, sans-serif;
+        font-family: "Bebas Neue", sans-serif;
         font-weight: 400;
         line-height: 0.84;
         letter-spacing: -0.02em;
@@ -247,7 +247,9 @@
         margin-bottom: auto;
         font-size: 168px;
         color: #16130F;
-        letter-spacing: 0.2em;
+        display: flex;
+        gap: 36px;
+        letter-spacing: 0;
       }
 
       /* Scene 3 — principles, performed */
@@ -626,8 +628,8 @@
       tl.addLabel("open", 0);
       tl.addLabel("zoom", 3.42);
       tl.addLabel("studies", 3.75);
-      tl.addLabel("wipe", 7.16);
-      tl.addLabel("principles", 7.5);
+      tl.addLabel("wipe", 6.62);
+      tl.addLabel("principles", 6.98);
       tl.addLabel("dip", 11.08);
       tl.addLabel("lockup", 11.25);
       tl.addLabel("out", 14.42);
@@ -715,32 +717,33 @@
 
       tl.from("#weight-kicker", { opacity: 0, x: 16, duration: 0.28, ease: "power3.out" }, "studies+=0.72");
       tl.to("#weight-cell", { scale: 0.97, duration: 0.08, ease: "power1.in", transformOrigin: "50% 80%" }, "studies+=0.86");
-      tl.to("#weight-cell", { scale: 1, duration: 0.1, ease: "expo.inOut" }, "studies+=0.94");
+      tl.to("#weight-cell", { scale: 1, duration: 0.1, ease: "expo.inOut" }, "studies+=0.96");
       tl.fromTo("#mass",
         { y: -540, scaleY: 1.06 },
         { y: -575, scaleY: 1.06, duration: 0.07, ease: "power1.out" },
         "studies+=0.94"
       );
-      tl.to("#mass", { y: 0, scaleY: 1.06, duration: 0.24, ease: "power4.in" }, "studies+=1.01");
+      tl.to("#mass", { y: 0, scaleY: 1.06, duration: 0.22, ease: "power4.in" }, "studies+=1.01");
       tl.to("#mass", { scaleY: 0.88, duration: 0.06, ease: "circ.out" }, "studies+=1.25");
-      tl.to("#mass", { scaleY: 1.05, duration: 0.08, ease: "power3.out" }, "studies+=1.31");
-      tl.to("#mass", { scaleY: 1, duration: 0.12, ease: "sine.inOut" }, "studies+=1.39");
+      tl.to("#mass", { scaleY: 1.05, duration: 0.08, ease: "power3.out" }, "studies+=1.33");
+      tl.to("#mass", { scaleY: 1, duration: 0.12, ease: "sine.inOut" }, "studies+=1.43");
 
       tl.from("#rhythm-kicker", { y: 12, opacity: 0, duration: 0.26, ease: "power2.out" }, "studies+=1.72");
       tl.from("#rhythm-word", { x: -30, opacity: 0, duration: 0.34, ease: "expo.out" }, "studies+=1.8");
       tl.from(".bar", {
         scaleY: 0, duration: 0.26, ease: "back.out(1.8)", stagger: 0.035
       }, "studies+=1.9");
-      tl.to(".bar", { scaleY: 1.12, duration: 0.07, ease: "power4.out", stagger: 0.012 }, "studies+=2.58");
-      tl.to(".bar", { scaleY: 1, duration: 0.1, ease: "circ.inOut", stagger: 0.012 }, "studies+=2.65");
 
       tl.from("#space-kicker", { opacity: 0, duration: 0.24, ease: "power1.out" }, "studies+=2.15");
-      tl.from("#space-word span", {
-        y: 32, opacity: 0, duration: 0.32, ease: "expo.out", stagger: 0.05
-      }, "studies+=2.28");
-      tl.from("#space-word", {
-        letterSpacing: "-0.06em", duration: 0.72, ease: "power3.inOut"
-      }, "studies+=2.32");
+      document.querySelectorAll("#space-word span").forEach(function (el, i) {
+        tl.from(el, {
+          x: (2 - i) * 48,
+          y: 32,
+          opacity: 0,
+          duration: 0.55,
+          ease: "power3.inOut"
+        }, "studies+=2.28");
+      });
 
       /* Staggered blocks. Scene swaps while covered. */
       var wipes = ["#wipe-a", "#wipe-b", "#wipe-c", "#wipe-d", "#wipe-e"];
@@ -759,8 +762,8 @@
       tl.from("#s3-index", { x: -18, opacity: 0, duration: 0.28, ease: "power2.out" }, "principles+=0.28");
       tl.from("#band-mark", { scale: 0, rotation: -8, opacity: 0, duration: 0.36, ease: "back.out(1.7)" }, "principles+=0.34");
       tl.from("#anticipation", { opacity: 0, duration: 0.16, ease: "power2.out" }, "principles+=0.46");
-      tl.fromTo("#anticipation", { y: 0 }, { y: 26, duration: 0.09, ease: "power1.in" }, "principles+=0.46");
-      tl.to("#anticipation", { y: 0, duration: 0.38, ease: "power4.out" }, "principles+=0.55");
+      tl.fromTo("#anticipation", { y: 0 }, { y: 26, duration: 0.08, ease: "power1.in" }, "principles+=0.46");
+      tl.to("#anticipation", { y: 0, duration: 0.36, ease: "power4.out" }, "principles+=0.56");
       tl.from("#stagger span", {
         x: -56, opacity: 0, duration: 0.34, ease: "expo.out", stagger: 0.07
       }, "principles+=0.94");
@@ -771,7 +774,7 @@
       tl.from("#hold-word", { opacity: 0, y: 12, duration: 0.7, ease: "power1.out" }, "principles+=2.1");
       tl.from("#hold-rule", { scaleX: 0, duration: 0.4, ease: "power3.inOut" }, "principles+=2.45");
       tl.fromTo("#s3-ring", { rotation: 0 }, {
-        rotation: 18, duration: 1.4, ease: "sine.inOut"
+        rotation: 18, duration: 1.9, ease: "sine.inOut"
       }, "principles+=2.05");
 
       /* Yellow dip, then the lockup. */
