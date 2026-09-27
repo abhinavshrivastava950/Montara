@@ -217,11 +217,12 @@ def main():
             r = math.tanh(right[i] * scale * 1.15)
             frames += struct.pack("<hh", int(l * 32767), int(r * 32767))
         wf.writeframes(frames)
-    # Land near -14 LUFS with true peak at or under -1.5 dBTP.
+    # Push toward -10 LUFS, then limit. AAC in the MP4 sits near -14.
+    # True peak stays at or under -1.5 dBTP.
     measured = subprocess.run(
         [
             "ffmpeg", "-y", "-i", raw,
-            "-af", "loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json",
+            "-af", "loudnorm=I=-10:TP=-1.5:LRA=11:print_format=json",
             "-f", "null", "-",
         ],
         check=True, capture_output=True, text=True,
@@ -232,13 +233,13 @@ def main():
         [
             "ffmpeg", "-y", "-i", raw,
             "-af",
-            "loudnorm=I=-14:TP=-1.5:LRA=11:"
+            "loudnorm=I=-10:TP=-1.5:LRA=11:"
             f"measured_I={stats['input_i']}:"
             f"measured_TP={stats['input_tp']}:"
             f"measured_LRA={stats['input_lra']}:"
             f"measured_thresh={stats['input_thresh']}:"
             f"offset={stats['target_offset']}:linear=true,"
-            "alimiter=limit=0.80:attack=5:release=40:level=disabled",
+            "alimiter=limit=0.76:attack=5:release=40:level=disabled",
             "-ar", "48000",
             path,
         ],
