@@ -8,7 +8,7 @@ import { compositeTimeline, probeDuration, mediaBin, masterAudio, generateThumbn
 import { composeScenePlan, renderComposedScenePlanWithReport, renderComposedTimeline } from "../../render-remotion/src/index";
 import { listPipelines, planVideo } from "../../ai/src/index";
 import { listProviderTools, listVideoProviders, listImageProviders, listTtsProviders, listMusicProviders, providerAvailable, buildProviderAuditReport, sanitizeProviderAuditReport, writeProviderAuditReport, runProviderSmoke, writeProviderLiveAuditReport, type MediaCategory } from "../../providers/src/index";
-import { preComposeGate, postRenderSelfReview, writeSelfReview, directScene, directScript, reviewSourceMedia, planReelTreatment, createReelArtifacts, type ReelInputKind, type ReelStyleMode, type SceneEmotion } from "../../quality/src/index";
+import { preComposeGate, postRenderSelfReview, writeSelfReview, directScene, directScript, reviewSourceMedia, planReelTreatment, createReelArtifacts, seniorTasteReview, applySeniorTasteFixes, type ReelInputKind, type ReelStyleMode, type SceneEmotion } from "../../quality/src/index";
 import { TTSSelector } from "../../tools/src/audio/tts-selector";
 import { CLIP_EMBED_DIM, embedTexts, runResearch } from "../../research/src/index";
 import { analyzeReferenceVideo, understandVideoWithVision, visionModelStatus, type VideoUnderstanding, type VisionMode } from "../../understand/src/index";
@@ -2228,6 +2228,60 @@ function runResumeCommand(rest: string[]): number {
   return 0;
 }
 
+function runTasteCommand(rest: string[]): number {
+  const irPath = rest[0];
+  if (!irPath || !existsSync(irPath) || irPath.startsWith("--")) {
+    console.error("usage: montara taste <ir.json> [--json] [--apply out.json]");
+    return 1;
+  }
+  let timeline: Timeline;
+  try {
+    timeline = JSON.parse(readFileSync(irPath, "utf8")) as Timeline;
+  } catch {
+    console.error(`taste: could not read ${irPath} as JSON`);
+    return 1;
+  }
+  const issues = validateTimeline(timeline);
+  if (issues.length) {
+    console.error(`taste: invalid timeline\n  ${issues.join("\n  ")}`);
+    return 1;
+  }
+
+  const report = seniorTasteReview(timeline);
+  const applyAt = rest.indexOf("--apply");
+  const outPath = applyAt >= 0 ? rest[applyAt + 1] : undefined;
+  if (applyAt >= 0 && (!outPath || outPath.startsWith("--"))) {
+    console.error("usage: montara taste <ir.json> [--json] [--apply out.json]");
+    return 1;
+  }
+  const applied = outPath ? applySeniorTasteFixes(timeline, report) : { timeline, applied: [] as ReturnType<typeof applySeniorTasteFixes>["applied"] };
+  if (outPath) {
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, `${JSON.stringify(applied.timeline, null, 2)}\n`);
+  }
+
+  if (rest.includes("--json")) {
+    console.log(JSON.stringify({
+      juniorScore: report.juniorScore,
+      verdict: report.verdict,
+      notes: report.notes,
+      applied: applied.applied,
+      ...(outPath ? { out: outPath } : {}),
+    }, null, 2));
+    return 0;
+  }
+
+  console.log(`taste ${report.verdict} (${report.juniorScore})`);
+  for (const note of report.notes) console.log(`  - ${note.id}: ${note.detail}`);
+  if (!report.notes.length) console.log("  - no junior tells");
+  if (outPath) {
+    console.log(applied.applied.length
+      ? `applied ${applied.applied.length} safe fix(es) -> ${outPath}`
+      : `no safe fixes -> ${outPath}`);
+  }
+  return 0;
+}
+
 function printHelp(): void {
   console.log(`montara <command>
 
@@ -2287,6 +2341,7 @@ Commands:
   enhance <audio> [out.wav]       noise reduction + voice enhancement; --master to hit -14 LUFS
   hear <audio>                    voice/music analysis (pace, warmth, loudness) -> scores JSON
   cut <ir.json> <op> [args]       editorial ops on the IR: split/ripple/roll/slip/slide/jcut/lcut/crossfade
+  taste <ir.json>                 score junior tells on the IR; --apply writes the safe fixes
   capture [--url URL] [out.mp4]    record/recommend/pick screen captures; Playwright auth via capture login
   compose <edit-decisions.json> [out.mp4]
                                   run Python video_compose; pass --assets for high-level render artifacts
@@ -2336,6 +2391,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     if (command === "enhance") return runEnhanceCommand(rest);
     if (command === "hear") return runHearCommand(rest);
     if (command === "cut") return runCutCommand(rest);
+    if (command === "taste") return runTasteCommand(rest);
     if (command === "replace-bg") return runReplaceBackgroundCommand(rest);
 
     if (command === "voiceid") {

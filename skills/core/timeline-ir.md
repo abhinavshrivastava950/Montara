@@ -25,15 +25,23 @@ plans validate against [`../../schemas/scene-plan.schema.json`](../../schemas/sc
 A renderer only ever consumes a **validated** Timeline. If `validateTimeline` returns issues, fix
 the IR before rendering — the pre-compose gate enforces exactly this.
 
+A media clip can carry `generation`: `{ op, prompt, status, model?, extendSec? }` with `op` of
+`generate`, `extend`, or `upscale`. `planInTimelineGeneration` writes `status: "planned"`. Renderers
+keep playing `source` until something replaces the path and sets `status: "ready"`. `montara taste`
+reads the same IR for junior assembly tells (even cuts, caption-on-one-plate, locked picture and
+sound, a flat music bed, a static open, bare type, a vertical short with no early text).
+
 ## Depth and motion
 
 `z` orders every clip in the composite **across tracks**, text included. A text clip has to sit on
 a `text` track, but its `z` is what decides whether it renders in front of or behind a video layer
 — that is how a title goes behind a matted subject.
 
-`keyframes` is a map of property name to `{ atSec, value, easing }` points. The ffmpeg engine
-compiles `x`, `y`, and text `opacity` into expressions over time; the value holds before the first
-key and after the last. `scale` and `rotateDeg` keyframes round-trip through the IR but render
-static on this engine, because the filters behind them take no time expression. Ask
-`hasAnimation(clip)` (`@montara/render-ffmpeg`) before claiming a clip moves — the slideshow-risk
-check counts keyframes as motion, so an unhonoured property would let a still pass as a moving cut.
+`keyframes` is a map of property name to `{ atSec, value, easing }` points, in composition seconds.
+The ffmpeg engine compiles `x`, `y`, text `opacity`, and the in-box camera (`zoom`, `panX`, `panY`).
+The value holds before the first key and after the last. `scale` and `rotateDeg` keyframes
+round-trip through the IR but render static on this engine, because the filters behind them take
+no time expression. Ask `hasAnimation(clip)` (`@montara/render-ffmpeg`) before claiming a clip
+moves — the slideshow-risk check counts keyframes as motion, so an unhonoured property would let a
+still pass as a moving cut. `montara taste --apply` uses a `zoom` push on a still open because that
+channel actually renders.

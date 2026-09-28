@@ -32,6 +32,7 @@ import {
   slideClip,
   jCut,
   lCut,
+  planInTimelineGeneration,
   closeGaps,
   findGaps,
   crossfade,
@@ -163,6 +164,8 @@ import {
   sampleTimestamps,
   reviewSourceMedia,
   documentaryEvidenceGate,
+  seniorTasteReview,
+  applySeniorTasteFixes,
   suggestTranscriptShortCuts,
   verifyShortCutsAgainstTranscript,
   type ScorableTool,
@@ -1806,6 +1809,110 @@ const blockedDocGate = documentaryEvidenceGate({
 });
 ok("documentaryEvidenceGate blocks unsourced source-backed claims and unsupported precise maps",
   !blockedDocGate.ok && blockedDocGate.blockers.length >= 2);
+
+const juniorTaste: Timeline = {
+  version: "1.1",
+  composition: { width: 1080, height: 1920, fps: 30, durationSec: 12, background: "000000" },
+  tracks: [
+    {
+      id: "v",
+      type: "video",
+      clips: [0, 1, 2, 3].map((i) => ({
+        id: `v${i}`,
+        type: "video" as const,
+        startSec: i * 3,
+        durationSec: 3,
+        source: { kind: "image" as const, path: "plate.png" },
+      })),
+    },
+    {
+      id: "t",
+      type: "text",
+      clips: [{ id: "cap", type: "text", startSec: 3, durationSec: 2, text: "caption on the plate" }],
+    },
+    {
+      id: "a",
+      type: "audio",
+      clips: [
+        { id: "a0", type: "audio", startSec: 0, durationSec: 3, source: { kind: "file", path: "vo.wav" } },
+        { id: "a1", type: "audio", startSec: 3, durationSec: 3, source: { kind: "file", path: "vo.wav" } },
+      ],
+    },
+  ],
+};
+const juniorReport = seniorTasteReview(juniorTaste);
+ok("senior taste flags a caption plate with locked cuts as junior",
+  juniorReport.verdict === "junior" &&
+  juniorReport.notes.some((note) => note.id === "caption-sandwich") &&
+  juniorReport.notes.some((note) => note.id === "locked-split") &&
+  juniorReport.notes.some((note) => note.id === "missing-hook") &&
+  preComposeGate(juniorTaste).warnings.some((warning) => warning.startsWith("senior taste junior")));
+
+const tasteFixed = applySeniorTasteFixes(juniorTaste, juniorReport);
+const afterFix = seniorTasteReview(tasteFixed.timeline);
+ok("safe taste fixes push in the open and shadow type on footage",
+  tasteFixed.applied.some((fix) => fix.kind === "cold-open-push") &&
+  tasteFixed.applied.some((fix) => fix.kind === "text-shadow") &&
+  !afterFix.notes.some((note) => note.id === "cold-open-static" || note.id === "bare-text") &&
+  validateTimeline(tasteFixed.timeline).length === 0);
+
+const seniorTaste: Timeline = {
+  version: "1.1",
+  composition: { width: 1920, height: 1080, fps: 30, durationSec: 8, background: "000000" },
+  tracks: [
+    {
+      id: "v",
+      type: "video",
+      clips: [
+        {
+          id: "open",
+          type: "video",
+          startSec: 0,
+          durationSec: 2.4,
+          source: { kind: "video", path: "open.mp4" },
+          keyframes: { zoom: [{ atSec: 0, value: 1.12 }, { atSec: 2.4, value: 1 }] },
+        },
+        { id: "wide", type: "video", startSec: 2.4, durationSec: 1.1, source: { kind: "image", path: "wide.png" } },
+        { id: "detail", type: "video", startSec: 3.5, durationSec: 4.5, source: { kind: "image", path: "detail.png" } },
+      ],
+    },
+    {
+      id: "t",
+      type: "text",
+      clips: [{
+        id: "hook",
+        type: "text",
+        startSec: 0.2,
+        durationSec: 1.6,
+        text: "the cut",
+        style: { shadow: true },
+      }],
+    },
+    {
+      id: "a",
+      type: "audio",
+      clips: [
+        { id: "line", type: "audio", startSec: 2.05, durationSec: 2.2, source: { kind: "file", path: "line.wav" } },
+        { id: "cue", type: "audio", startSec: 0.2, durationSec: 1.8, source: { kind: "file", path: "cue.wav" } },
+      ],
+    },
+  ],
+};
+const withSlot = planInTimelineGeneration(seniorTaste, "detail", {
+  op: "extend",
+  prompt: "hold the detail and drift forward",
+  extendSec: 1.5,
+  model: "local",
+});
+const seniorReport = seniorTasteReview(withSlot);
+ok("senior taste accepts a varied cut with a split edit and an in-timeline extend",
+  seniorReport.verdict === "senior" &&
+  seniorReport.notes.some((note) => note.id === "in-timeline-generation") &&
+  withSlot !== seniorTaste &&
+  validateTimeline(withSlot).length === 0);
+ok("in-timeline generation refuses a non-media clip and an extend with no duration",
+  planInTimelineGeneration(seniorTaste, "hook", { op: "upscale", prompt: "sharper" }) === seniorTaste &&
+  planInTimelineGeneration(seniorTaste, "detail", { op: "extend", prompt: "more" }) === seniorTaste);
 
 const transcriptCaptions = [
   { startSec: 0, endSec: 1.4, text: "The first sentence lands cleanly." },

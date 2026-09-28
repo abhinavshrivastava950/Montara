@@ -332,8 +332,9 @@ composition paths instead of decorative fallback demos.
 | 3.10 | Project workspace convention enforced | ☑ | `montara project init <name>` creates gitignored `projects/<name>/` artifacts/assets/auth/renders/hyperframes layout with manifest |
 | 3.11 | SpeechBrain optional backend in `@montara/hear` | ◐ | Optional status probe reports SpeechBrain/Resemblyzer/pyannote availability without hard-failing |
 | 3.12 | Real CLIP/BLIP in `@montara/understand` | ◐ | Optional local Transformers.js CLIP classification path + `montara understand --vision`; keep signalstats default until cached-weight and BLIP/caption validation land |
+| 3.13 | Senior-taste gate + in-timeline generation slot | ☑ | `montara taste` scores junior assembly tells and applies safe fixes; `planInTimelineGeneration` parks generate/extend/upscale on the media clip |
 
-**Stage 3 exit criteria:** 3.1-3.10 ☑, 3.11-3.12 ◐; moat items M3, M4, M5, M10, M11, M12 → ☑ or ◐ with validate.
+**Stage 3 exit criteria:** 3.1-3.10 and 3.13 ☑, 3.11-3.12 ◐; moat items M3, M4, M5, M10, M11, M12 → ☑ or ◐ with validate.
 
 ---
 

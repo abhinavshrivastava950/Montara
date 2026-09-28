@@ -21,3 +21,4 @@ export * from "./reelPlanner";
 export * from "./reelArtifacts";
 export * from "./documentaryEvidence";
 export * from "./shortsTranscript";
+export * from "./seniorTaste";

@@ -52,6 +52,23 @@ The `edit_decisions` artifact should include:
 - **music:** Background music settings (asset, volume, ducking, fades)
 - **transitions:** Transition type and timing between cuts
 
+## What the current edit bar is asking for
+
+The editors getting the work in 2026 are not being hired to drop captions on a plate. The public
+argument, from Pause to VEED OpenEdit to the Runway timeline plugins, is the same: junior assembly
+(even cuts, a caption track, picture locked to sound, one bed under everything) is no longer the
+edit. Taste is. Generation also moved onto the timeline — extend and upscale a clip in place
+instead of rendering a sidecar and hoping it fits.
+
+Montara already stores the edit as Timeline IR, which is the "code you can change" half of that
+argument. Close the other half before you call a cut done:
+
+1. Run `montara taste <ir.json>`. A `junior` verdict means the cut still reads as an auto-assembly.
+2. `--apply` only does the safe, renderable fixes: a push-in on a still open, and a shadow on type
+   that sits on footage. J-cuts, L-cuts, and score silences stay explicit `montara cut` / music ops.
+3. When a shot needs new pixels, `planInTimelineGeneration` records `generate`, `extend`, or
+   `upscale` on that media clip. The current source keeps playing until the job is `ready`.
+
 ## Quality Checklist
 
 - [ ] No visible jump cuts (smooth transitions between segments)

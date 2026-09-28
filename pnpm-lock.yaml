@@ -236,6 +236,8 @@ importers:
         specifier: workspace:*
         version: link:../render-ffmpeg
 
+  packages/vision: {}
+
 packages:
 
   '@esbuild/aix-ppc64@0.24.2':
