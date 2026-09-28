@@ -167,6 +167,21 @@ export interface SolidClip extends ClipBase {
   label?: string;
 }
 
+/**
+ * A generation job that belongs on this clip, the way a Resolve/Premiere plugin
+ * generates, extends, or upscales without leaving the timeline.
+ *
+ * `planned` still plays `source`. `ready` means `source.path` already holds the result.
+ */
+export interface InTimelineGeneration {
+  op: "generate" | "extend" | "upscale";
+  prompt: string;
+  model?: string;
+  /** Seconds to add past the current out-point. Required when `op` is `extend`. */
+  extendSec?: number;
+  status: "planned" | "ready";
+}
+
 /** Real image/video footage on the video track. The unit PiP, collage, and overlays are built from. */
 export interface MediaClip extends ClipBase {
   type: "video";
@@ -176,6 +191,8 @@ export interface MediaClip extends ClipBase {
   /** Trim into the source for video sources (seconds). */
   sourceInSec?: number;
   label?: string;
+  /** Generate, extend, or upscale this plate in place. Renderers keep playing `source` until status is ready. */
+  generation?: InTimelineGeneration;
 }
 
 /**
@@ -394,6 +411,19 @@ export function validateTimeline(timeline: Timeline): string[] {
         issues.push(`clip ${clip.id} exceeds composition duration`);
       }
       if (isMediaClip(clip) && !clip.source.path) issues.push(`media clip ${clip.id} requires source.path`);
+      if (isMediaClip(clip) && clip.generation) {
+        const generation = clip.generation;
+        if (generation.op !== "generate" && generation.op !== "extend" && generation.op !== "upscale") {
+          issues.push(`clip ${clip.id} generation op must be generate, extend, or upscale`);
+        }
+        if (!generation.prompt?.trim()) issues.push(`clip ${clip.id} generation requires a prompt`);
+        if (generation.status !== "planned" && generation.status !== "ready") {
+          issues.push(`clip ${clip.id} generation status must be planned or ready`);
+        }
+        if (generation.op === "extend" && !(typeof generation.extendSec === "number" && generation.extendSec > 0)) {
+          issues.push(`clip ${clip.id} extend requires extendSec > 0`);
+        }
+      }
       if (clip.transform?.opacity != null && (clip.transform.opacity < 0 || clip.transform.opacity > 1)) {
         issues.push(`clip ${clip.id} opacity must be 0..1`);
       }

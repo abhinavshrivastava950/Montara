@@ -40,6 +40,8 @@ montara segment <video> --auto # promptable tracked masks via SAM 2 (--box | --p
 montara detect <video>         # YOLO detection for mask prompts and auto-framing
 montara enhance <audio>        # noise reduction + voice enhancement (--master to land -14 LUFS)
 montara cut <ir.json> <op>     # split/ripple/roll/slip/slide/jcut/lcut/crossfade on the IR
+montara taste <ir.json>        # senior-taste score; --apply writes safe IR fixes
+montara direct "<idea>"       # senior motion cut from short slots; a small model only fills the lines
 montara runtimes inventory     # configured external model/cache paths; no downloads or scans
 montara serve                  # local web GUI
 montara export <ir.json> --to otio|fcpxml|edl   # bridge to Premiere/DaVinci/Final Cut

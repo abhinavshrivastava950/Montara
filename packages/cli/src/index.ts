@@ -6,9 +6,9 @@ import type { ScenePlan, Timeline } from "../../core/src/index";
 import { validateTimeline, scenePlanToTimeline, pictureInPicture, collage, type Corner, type MediaSpec } from "../../core/src/index";
 import { compositeTimeline, probeDuration, mediaBin, masterAudio, generateThumbnails, cutShorts, buildReel, type Caption, type ThumbConcept } from "../../render-ffmpeg/src/index";
 import { composeScenePlan, renderComposedScenePlanWithReport, renderComposedTimeline } from "../../render-remotion/src/index";
-import { listPipelines, planVideo } from "../../ai/src/index";
+import { applySpokenEdit, compileMotionCut, listPipelines, parseSmallModelSlots, planVideo, slotsFromIdea, smallModelSlotPrompt, type MotionCut, type MotionMood } from "../../ai/src/index";
 import { listProviderTools, listVideoProviders, listImageProviders, listTtsProviders, listMusicProviders, providerAvailable, buildProviderAuditReport, sanitizeProviderAuditReport, writeProviderAuditReport, runProviderSmoke, writeProviderLiveAuditReport, type MediaCategory } from "../../providers/src/index";
-import { preComposeGate, postRenderSelfReview, writeSelfReview, directScene, directScript, reviewSourceMedia, planReelTreatment, createReelArtifacts, type ReelInputKind, type ReelStyleMode, type SceneEmotion } from "../../quality/src/index";
+import { preComposeGate, postRenderSelfReview, writeSelfReview, directScene, directScript, reviewSourceMedia, planReelTreatment, createReelArtifacts, seniorTasteReview, applySeniorTasteFixes, type ReelInputKind, type ReelStyleMode, type SceneEmotion } from "../../quality/src/index";
 import { TTSSelector } from "../../tools/src/audio/tts-selector";
 import { CLIP_EMBED_DIM, embedTexts, runResearch } from "../../research/src/index";
 import { analyzeReferenceVideo, understandVideoWithVision, visionModelStatus, type VideoUnderstanding, type VisionMode } from "../../understand/src/index";
@@ -2228,6 +2228,228 @@ function runResumeCommand(rest: string[]): number {
   return 0;
 }
 
+const DIRECT_MOODS: readonly MotionMood[] = ["cinematic", "technical", "warm", "kinetic"];
+
+function motionCutIssues(cut: MotionCut): string[] {
+  return [
+    ...validateTimeline(cut.timeline),
+    ...validateTimeline(cut.variants.youtube),
+    ...validateTimeline(cut.variants.shorts),
+    ...validateTimeline(cut.variants.square),
+  ];
+}
+
+function writeMotionCut(dir: string, cut: MotionCut): void {
+  mkdirSync(join(dir, "variants"), { recursive: true });
+  writeFileSync(join(dir, "motion-cut.json"), `${JSON.stringify(cut, null, 2)}\n`);
+  writeFileSync(join(dir, "index.html"), cut.html);
+  writeFileSync(join(dir, "timeline.json"), `${JSON.stringify(cut.timeline, null, 2)}\n`);
+  writeFileSync(join(dir, "variants", "shorts.html"), cut.htmlByProfile.shorts);
+  writeFileSync(join(dir, "variants", "shorts.timeline.json"), `${JSON.stringify(cut.variants.shorts, null, 2)}\n`);
+  writeFileSync(join(dir, "variants", "square.html"), cut.htmlByProfile.square);
+  writeFileSync(join(dir, "variants", "square.timeline.json"), `${JSON.stringify(cut.variants.square, null, 2)}\n`);
+}
+
+function directSummary(dir: string, cut: MotionCut, usedModel: boolean): Record<string, unknown> {
+  return {
+    out: dir,
+    mood: cut.slots.mood,
+    usedModel,
+    slots: cut.slots,
+    seconds: cut.timeline.composition.durationSec,
+    verdict: seniorTasteReview(cut.timeline).verdict,
+    files: [
+      "motion-cut.json",
+      "index.html",
+      "timeline.json",
+      "variants/shorts.html",
+      "variants/shorts.timeline.json",
+      "variants/square.html",
+      "variants/square.timeline.json",
+    ],
+  };
+}
+
+function readMotionCut(cutPath: string): MotionCut {
+  const parsed = JSON.parse(readFileSync(cutPath, "utf8")) as MotionCut;
+  if (!parsed?.timeline || !parsed.slots || !Array.isArray(parsed.undoStack) || !Array.isArray(parsed.redoStack)) {
+    throw new Error("not a motion cut");
+  }
+  return parsed;
+}
+
+async function runDirectCommand(rest: string[]): Promise<number> {
+  const usage = [
+    'usage: montara direct "<idea>" [--mood cinematic|technical|warm|kinetic] [--seconds N] [--out dir] [--brain] [--json]',
+    '       montara direct --from <dir> --edit "<utterance>"',
+  ].join("\n");
+  const fromDir = optionValue(rest, "--from");
+  const edit = optionValue(rest, "--edit");
+  const json = rest.includes("--json");
+  if (fromDir || edit) {
+    if (!fromDir || edit == null || !edit.trim()) {
+      console.error(usage);
+      return 1;
+    }
+    const cutPath = join(fromDir, "motion-cut.json");
+    if (!existsSync(cutPath)) {
+      console.error(`direct: missing motion cut at ${cutPath}`);
+      return 1;
+    }
+    let cut: MotionCut;
+    try {
+      cut = readMotionCut(cutPath);
+    } catch {
+      console.error(`direct: could not read ${cutPath} as a motion cut`);
+      return 1;
+    }
+    const next = applySpokenEdit(cut, edit);
+    const issues = motionCutIssues(next);
+    if (issues.length) {
+      console.error(`direct: invalid timeline\n  ${issues.join("\n  ")}`);
+      return 1;
+    }
+    writeMotionCut(fromDir, next);
+    if (json) console.log(JSON.stringify(directSummary(fromDir, next, next.usedModel), null, 2));
+    else console.log(`direct ${next.slots.mood} ${seniorTasteReview(next.timeline).verdict} -> ${fromDir}`);
+    return 0;
+  }
+
+  let mood: MotionMood | undefined;
+  let seconds: number | undefined;
+  let out: string | undefined;
+  let useBrain = false;
+  let brainTimeoutMs = 2500;
+  const ideaParts: string[] = [];
+  for (let i = 0; i < rest.length; i++) {
+    const arg = rest[i] ?? "";
+    if (arg === "--json") continue;
+    if (arg === "--brain" || arg === "--local-brain") {
+      useBrain = true;
+    } else if (arg === "--mood") {
+      mood = rest[++i] as MotionMood | undefined;
+    } else if (arg.startsWith("--mood=")) {
+      mood = arg.slice("--mood=".length) as MotionMood;
+    } else if (arg === "--seconds" || arg === "-s") {
+      seconds = Number(rest[++i]);
+    } else if (arg.startsWith("--seconds=")) {
+      seconds = Number(arg.slice("--seconds=".length));
+    } else if (arg === "--out") {
+      out = rest[++i];
+    } else if (arg.startsWith("--out=")) {
+      out = arg.slice("--out=".length);
+    } else if (arg === "--brain-timeout-ms") {
+      brainTimeoutMs = Number(rest[++i]);
+    } else if (arg.startsWith("--brain-timeout-ms=")) {
+      brainTimeoutMs = Number(arg.slice("--brain-timeout-ms=".length));
+    } else {
+      ideaParts.push(arg);
+    }
+  }
+  const idea = ideaParts.join(" ").trim();
+  if (!idea) {
+    console.error(usage);
+    return 1;
+  }
+  if (mood && !DIRECT_MOODS.includes(mood)) {
+    console.error(usage);
+    return 1;
+  }
+
+  let slots = slotsFromIdea(idea, mood);
+  let usedModel = false;
+  if (useBrain) {
+    try {
+      const result = await brainComplete(smallModelSlotPrompt(idea), {
+        temperature: 0.2,
+        maxTokens: 180,
+        timeoutMs: Math.max(500, Number.isFinite(brainTimeoutMs) ? brainTimeoutMs : 2500),
+      });
+      if (result?.text) {
+        const parsed = parseSmallModelSlots(result.text, idea);
+        slots = mood ? { ...parsed.slots, mood } : parsed.slots;
+        usedModel = parsed.usedModel;
+      }
+    } catch {
+      slots = slotsFromIdea(idea, mood);
+      usedModel = false;
+    }
+  }
+
+  const cut = compileMotionCut(slots, {
+    ...(Number.isFinite(seconds) ? { targetSeconds: seconds } : {}),
+    idea,
+    usedModel,
+  });
+  const issues = motionCutIssues(cut);
+  if (issues.length) {
+    console.error(`direct: invalid timeline\n  ${issues.join("\n  ")}`);
+    return 1;
+  }
+  const dir = out?.trim() || join("out", `direct-${slug(idea)}`);
+  writeMotionCut(dir, cut);
+  if (json) console.log(JSON.stringify(directSummary(dir, cut, usedModel), null, 2));
+  else {
+    console.log(`direct ${cut.slots.mood} ${seniorTasteReview(cut.timeline).verdict} -> ${dir}`);
+    console.log(usedModel ? "  slots from the local model" : "  slots from the compiler");
+  }
+  return 0;
+}
+
+function runTasteCommand(rest: string[]): number {
+  const irPath = rest[0];
+  if (!irPath || !existsSync(irPath) || irPath.startsWith("--")) {
+    console.error("usage: montara taste <ir.json> [--json] [--apply out.json]");
+    return 1;
+  }
+  let timeline: Timeline;
+  try {
+    timeline = JSON.parse(readFileSync(irPath, "utf8")) as Timeline;
+  } catch {
+    console.error(`taste: could not read ${irPath} as JSON`);
+    return 1;
+  }
+  const issues = validateTimeline(timeline);
+  if (issues.length) {
+    console.error(`taste: invalid timeline\n  ${issues.join("\n  ")}`);
+    return 1;
+  }
+
+  const report = seniorTasteReview(timeline);
+  const applyAt = rest.indexOf("--apply");
+  const outPath = applyAt >= 0 ? rest[applyAt + 1] : undefined;
+  if (applyAt >= 0 && (!outPath || outPath.startsWith("--"))) {
+    console.error("usage: montara taste <ir.json> [--json] [--apply out.json]");
+    return 1;
+  }
+  const applied = outPath ? applySeniorTasteFixes(timeline, report) : { timeline, applied: [] as ReturnType<typeof applySeniorTasteFixes>["applied"] };
+  if (outPath) {
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, `${JSON.stringify(applied.timeline, null, 2)}\n`);
+  }
+
+  if (rest.includes("--json")) {
+    console.log(JSON.stringify({
+      juniorScore: report.juniorScore,
+      verdict: report.verdict,
+      notes: report.notes,
+      applied: applied.applied,
+      ...(outPath ? { out: outPath } : {}),
+    }, null, 2));
+    return 0;
+  }
+
+  console.log(`taste ${report.verdict} (${report.juniorScore})`);
+  for (const note of report.notes) console.log(`  - ${note.id}: ${note.detail}`);
+  if (!report.notes.length) console.log("  - no junior tells");
+  if (outPath) {
+    console.log(applied.applied.length
+      ? `applied ${applied.applied.length} safe fix(es) -> ${outPath}`
+      : `no safe fixes -> ${outPath}`);
+  }
+  return 0;
+}
+
 function printHelp(): void {
   console.log(`montara <command>
 
@@ -2287,6 +2509,8 @@ Commands:
   enhance <audio> [out.wav]       noise reduction + voice enhancement; --master to hit -14 LUFS
   hear <audio>                    voice/music analysis (pace, warmth, loudness) -> scores JSON
   cut <ir.json> <op> [args]       editorial ops on the IR: split/ripple/roll/slip/slide/jcut/lcut/crossfade
+  taste <ir.json>                 score junior tells on the IR; --apply writes the safe fixes
+  direct "<idea>"                 compile a senior motion cut from short slots; --from --edit undoes
   capture [--url URL] [out.mp4]    record/recommend/pick screen captures; Playwright auth via capture login
   compose <edit-decisions.json> [out.mp4]
                                   run Python video_compose; pass --assets for high-level render artifacts
@@ -2336,6 +2560,8 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     if (command === "enhance") return runEnhanceCommand(rest);
     if (command === "hear") return runHearCommand(rest);
     if (command === "cut") return runCutCommand(rest);
+    if (command === "taste") return runTasteCommand(rest);
+    if (command === "direct") return runDirectCommand(rest);
     if (command === "replace-bg") return runReplaceBackgroundCommand(rest);
 
     if (command === "voiceid") {

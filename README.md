@@ -56,6 +56,8 @@ all operates on the same JSON timeline the first command just wrote:
 
 ```bash
 montara cut out/timeline.json split shot-2 4.5                  # editorial ops on the IR
+montara taste out/timeline.json --apply out/taste.json          # junior-tell score + safe fixes
+montara direct "Dawn over the harbor"                        # senior motion cut from short slots
 montara fx pip screen.mp4 webcam.mp4 --ellipse                  # layered composition, masks, collage
 montara matte walk.mp4 out/matte.mp4                            # subject cutout, no green screen
 montara hear stems interview.mp4 out/stems --two-stems vocals   # pull the voice out of the music

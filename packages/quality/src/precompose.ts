@@ -5,6 +5,7 @@
 import type { Timeline } from "../../core/src/index";
 import { validateTimeline } from "../../core/src/index";
 import { DecisionTrail, clamp01 } from "./audit";
+import { seniorTasteReview } from "./seniorTaste";
 import { slideshowRisk, type SlideshowRisk } from "./slideshow";
 
 export interface PreComposePromise {
@@ -70,6 +71,12 @@ export function preComposeGate(
     blockers.push(`slideshow risk ${slideshow.score} over cap ${promise.maxSlideshowRisk}: ${slideshow.reasons.join("; ")}`);
   } else if (slideshow.level !== "low") {
     warnings.push(`slideshow risk ${slideshow.level} (${slideshow.score}): ${slideshow.reasons.join("; ")}`);
+  }
+
+  const taste = seniorTasteReview(timeline);
+  if (taste.verdict === "junior") {
+    const tells = taste.notes.filter((note) => note.scored).map((note) => note.detail);
+    warnings.push(`senior taste junior (${taste.juniorScore}): ${tells.join("; ")}`);
   }
 
   const ok = blockers.length === 0;
