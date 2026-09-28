@@ -30,6 +30,8 @@ A media clip can carry `generation`: `{ op, prompt, status, model?, extendSec? }
 keep playing `source` until something replaces the path and sets `status: "ready"`. `montara taste`
 reads the same IR for junior assembly tells (even cuts, caption-on-one-plate, locked picture and
 sound, a flat music bed, a static open, bare type, a vertical short with no early text).
+`montara direct` compiles that same IR from four short lines — the model fills the lines, the
+compiler owns the beats — and `createHistory` / spoken `undo` restore the previous timeline object.
 
 ## Depth and motion
 

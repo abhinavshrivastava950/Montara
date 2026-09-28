@@ -33,6 +33,10 @@ import {
   jCut,
   lCut,
   planInTimelineGeneration,
+  createHistory,
+  commitEdit,
+  undoEdit,
+  redoEdit,
   closeGaps,
   findGaps,
   crossfade,
@@ -184,7 +188,7 @@ import {
   normalizedVector,
   EMBED_DIM,
 } from "../packages/research/src/index";
-import { getPipeline, PIPELINE_DEFS } from "../packages/ai/src/index";
+import { applySpokenEdit, compileMotionCut, getPipeline, parseSmallModelSlots, PIPELINE_DEFS, slotsFromIdea, smallModelSlotPrompt } from "../packages/ai/src/index";
 import { detectScenes, sampleKeyFrames, transcribe, understandVideo, understandVideoWithVision, visionModelStatus, analyzeReferenceVideo } from "../packages/understand/src/index";
 import { listEngines, getEngine, engineAvailable, preferredEngine, renderWithEngine, recommendEngine, engineReallyAvailable, availableEngines, engineLicenseClass, selectCompositionEngine, probeHyperframes, hyperframesAvailable } from "../packages/render-engines/src/index";
 import { threeAvailable } from "../packages/render-three/src/index";
@@ -1913,6 +1917,106 @@ ok("senior taste accepts a varied cut with a split edit and an in-timeline exten
 ok("in-timeline generation refuses a non-media clip and an extend with no duration",
   planInTimelineGeneration(seniorTaste, "hook", { op: "upscale", prompt: "sharper" }) === seniorTaste &&
   planInTimelineGeneration(seniorTaste, "detail", { op: "extend", prompt: "more" }) === seniorTaste);
+
+const history0 = createHistory(seniorTaste);
+const history1 = commitEdit(history0, withSlot);
+ok("timeline history commits, undoes, and redoes the same timeline objects",
+  commitEdit(history1, history1.present) === history1 &&
+  undoEdit(history0) === history0 &&
+  undoEdit(history1).present === seniorTaste &&
+  redoEdit(undoEdit(history1)).present === withSlot &&
+  redoEdit(history1) === history1);
+
+const garbageSlots = parseSmallModelSlots("sorry, I designed a twelve-cut montage with even holds", "A harbor at dawn");
+const slotPrompt = smallModelSlotPrompt("A harbor at dawn");
+ok("garbage model text falls back to idea slots",
+  garbageSlots.usedModel === false &&
+  garbageSlots.slots.hook.length > 0 &&
+  /do not design the edit/i.test(slotPrompt) &&
+  slotPrompt.includes("cinematic|technical|warm|kinetic"));
+
+const longHook = "This hook line is definitely longer than forty two characters easily";
+const parsedSlots = parseSmallModelSlots(JSON.stringify({
+  hook: longHook,
+  turn: "The tide turns under the pier",
+  proof: "The hold is uneven and the type has a shadow",
+  payoff: "Dawn finishes the cut",
+  mood: "technical",
+}), "ignored idea");
+ok("valid slot JSON is accepted and the hook is clamped",
+  parsedSlots.usedModel === true &&
+  parsedSlots.slots.mood === "technical" &&
+  parsedSlots.slots.hook.length <= 42 &&
+  parsedSlots.slots.hook.length > 0);
+
+const motionCut = compileMotionCut(parsedSlots.slots, { usedModel: true, idea: "A harbor at dawn" });
+const motionShorts = motionCut.variants.shorts;
+const motionVideo = motionCut.timeline.tracks.filter((track) => track.type === "video").flatMap((track) => track.clips);
+const motionMean = motionVideo.reduce((sum, clip) => sum + clip.durationSec, 0) / motionVideo.length;
+const motionCv = Math.sqrt(motionVideo.reduce((sum, clip) => sum + (clip.durationSec - motionMean) ** 2, 0) / motionVideo.length) / motionMean;
+const motionColors = new Set(motionVideo.flatMap((clip) => clip.type === "video" && clip.source.kind === "solid" ? [clip.source.color] : []));
+const hookLine = findClip(motionCut.timeline, "line-hook")?.clip;
+const hookPlate = findClip(motionCut.timeline, "beat-hook")?.clip;
+const [cueOpen, cueProof] = motionCut.musicCues;
+const masterTaste = seniorTasteReview(motionCut.timeline);
+const shortsTaste = seniorTasteReview(motionShorts);
+ok("a slot compile is a senior film in 16:9 and 9:16",
+  validateTimeline(motionCut.timeline).length === 0 &&
+  validateTimeline(motionShorts).length === 0 &&
+  validateTimeline(motionCut.variants.square).length === 0 &&
+  masterTaste.verdict === "senior" &&
+  shortsTaste.verdict === "senior" &&
+  masterTaste.notes.every((note) => !note.scored) &&
+  shortsTaste.notes.every((note) => !note.scored) &&
+  motionCut.timeline === motionCut.variants.youtube &&
+  ["youtube", "shorts", "square"].every((id) => id in motionCut.variants && id in motionCut.htmlByProfile));
+ok("compiled motion varies the holds, hooks early, and leaves a music gap",
+  motionCv >= 0.08 &&
+  motionColors.size === 4 &&
+  hookLine?.type === "text" &&
+  hookLine.startSec < 1.2 &&
+  hookLine.style?.shadow === true &&
+  hookPlate?.keyframes?.zoom?.[0]?.value === 1 &&
+  hookPlate?.keyframes?.zoom?.[1]?.value === 1.08 &&
+  hookPlate?.transitionOut?.kind === "crossfade" &&
+  !!cueOpen && !!cueProof && cueProof.startSec >= cueOpen.endSec + 0.4);
+ok("compiled HTML is a paused GSAP composition",
+  motionCut.html.includes('data-composition-id="montara-motion"') &&
+  motionCut.html.includes("tl.from") &&
+  motionCut.html.split("tl.from").length - 1 === 12 &&
+  motionCut.html.includes("power3.out") &&
+  motionCut.html.includes("expo.out") &&
+  motionCut.html.includes("power2.out") &&
+  motionCut.html.includes("opacity: 0") &&
+  motionCut.html.includes("window.__timelines") &&
+  !motionCut.html.includes("Math.random") &&
+  !motionCut.html.includes("Date.now") &&
+  !motionCut.html.includes("<template") &&
+  !motionCut.html.includes("Roboto") &&
+  motionCut.timeline.composition.background !== "333333" &&
+  motionCut.timeline.composition.background !== "3b82f6");
+
+const warmerCut = applySpokenEdit(motionCut, "warmer");
+const undoneCut = applySpokenEdit(warmerCut, "undo");
+const redoneCut = applySpokenEdit(undoneCut, "redo");
+ok("a spoken mood edit undoes back to the same timeline",
+  warmerCut.slots.mood === "warm" &&
+  warmerCut.timeline !== motionCut.timeline &&
+  undoneCut.timeline === motionCut.timeline &&
+  redoneCut.timeline === warmerCut.timeline &&
+  applySpokenEdit(motionCut, "undo") === motionCut &&
+  applySpokenEdit(motionCut, "please recut the whole film") === motionCut);
+
+const emptyFilm = compileMotionCut(slotsFromIdea(""));
+const heroFilm = compileMotionCut(slotsFromIdea("A harbor at dawn"), { heroPath: "proof.mp4" });
+const heroProof = findClip(heroFilm.timeline, "beat-proof")?.clip;
+ok("an empty idea and a hero plate still compile a senior cut",
+  validateTimeline(emptyFilm.timeline).length === 0 &&
+  seniorTasteReview(emptyFilm.timeline).verdict === "senior" &&
+  !!heroProof && isMediaClip(heroProof) &&
+  heroProof.generation?.op === "extend" &&
+  (heroProof.generation.extendSec ?? 0) > 0 &&
+  seniorTasteReview(heroFilm.timeline).notes.every((note) => !note.scored));
 
 const transcriptCaptions = [
   { startSec: 0, endSec: 1.4, text: "The first sentence lands cleanly." },

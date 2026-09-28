@@ -68,6 +68,10 @@ argument. Close the other half before you call a cut done:
    that sits on footage. J-cuts, L-cuts, and score silences stay explicit `montara cut` / music ops.
 3. When a shot needs new pixels, `planInTimelineGeneration` records `generate`, `extend`, or
    `upscale` on that media clip. The current source keeps playing until the job is `ready`.
+4. For a one-sentence film, `montara direct "<idea>"` compiles the motion itself: uneven beats,
+   a push from frame 1, a mood palette, GSAP entrances, and YouTube / Shorts / square variants.
+   A smaller model may fill the four lines. It does not time the cut. `montara direct --from <dir> --edit "undo"`
+   restores the previous film. See [small-model-motion.md](small-model-motion.md).
 
 ## Quality Checklist
 

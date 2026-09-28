@@ -42,6 +42,7 @@ The rules below are universal.
 | **audio scored, not just present** | `quality/audioRisk.ts` (`scoreAudioRisk`), surfaced in `postRenderSelfReview` |
 | picture scored | `quality/slideshowRisk.ts` (6 dimensions) + `quality/variationChecker.ts` |
 | senior taste, not a junior assembly | `quality/seniorTaste.ts` (`montara taste`) |
+| Opus-level motion from short slots | `ai/smallModelMotion.ts` (`montara direct`) |
 | QA playback | `hear/qaPlayback` |
 | render cost per scene type | `quality/renderTiming.ts` + `autoRenderScene().renderMs` |
 | thumbnails / Shorts | `render-ffmpeg/craft.ts` |

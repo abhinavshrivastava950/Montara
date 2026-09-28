@@ -110,6 +110,7 @@ building PiP / collage / masks / effects.
 | Skill | File | Trigger | Agent Skills (Layer 3) |
 |-------|------|---------|----------------------|
 | Video Editing | `creative/video-editing.md` | Cut decisions, pacing, rhythm | `ffmpeg`, `video-toolkit` |
+| Small-model motion | `creative/small-model-motion.md` | One sentence to a senior cut; the model fills slots only | `ffmpeg`, `hyperframes` |
 | Enhancement Strategy | `creative/enhancement-strategy.md` | Overlay placement and density | `ffmpeg` |
 | Data Visualization | `creative/data-visualization.md` | Chart type selection, animation, label placement | `d3-viz`, `remotion-best-practices` |
 | Video Stitching | `creative/video-stitching.md` | Multi-clip assembly, AI clip chaining, spatial composition | `ffmpeg`, `video-toolkit` |
